@@ -1,5 +1,5 @@
 {
-some change in dev branch my changes noe
+some change \
 	"data_schema": {
 		"title": "REST API step definition",
 		"type": "object",
