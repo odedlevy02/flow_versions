@@ -1,0 +1,285 @@
+{
+    "name": "CalcPremAndCreatePolicy",
+    "flow": {
+        "steps": [
+            {
+                "stepType": "dateenrich",
+                "config": {
+                    "maps": [
+                        {
+                            "sourcePath": "fromDate",
+                            "format": "YYYY-MM-DDT00:00:00",
+                            "targetPath": "fromDate"
+                        },
+                        {
+                            "sourcePath": "renewDate",
+                            "format": "YYYY-MM-DDT00:00:00",
+                            "targetPath": "renewDate"
+                        },
+                        {
+                            "sourcePath": "toDate",
+                            "format": "YYYY-MM-DDT23:59:59",
+                            "targetPath": "toDate"
+                        }
+                    ]
+                }
+            },
+            {
+                "stepType": "apiEnrich",
+                "stepArgs": "soapSlim",
+                "config": {
+                    "endpoint": {
+                        "url": "http://idit-ci:7014/idit-web/ws?methodName=PremiumCalculate&serviceName=IDITServices&wsdl"
+                    },
+                    "method": "IDITServicesPremiumCalculate.IDITServicesPremiumCalculateInterface.IDITServicesPremiumCalculate",
+                    "targetPath": "result.calculatedPremium",
+                    "soapRequest": {
+                        "policyHeaderIVO.attributes.main": "true",
+                        "policyHeaderIVO.isMasterPolicy": "false",
+                        "policyHeaderIVO.policyIVOsList.policyIVOs.policyContactIVOsList.policyContactIVOs.contactExtNum": "{{identifier}}",
+                        "policyHeaderIVO.policyIVOsList.policyIVOs.policyContactIVOsList.policyContactIVOs.policyContactRoleVORef.attributes.id": "{{identifierRole}}",
+                        "policyHeaderIVO.statusCodeVORef.attributes.id": "{{policyStatus}}",
+                        "policyHeaderIVO.policyIVOsList.policyIVOs.policyLobIVOsList.policyLobIVOs.lobVORef.attributes.id": "{{productType}}",
+                        "policyHeaderIVO.policyIVOsList.policyIVOs.policyLobIVOsList.policyLobIVOs.policyLobAssetIVOsList.policyLobAssetIVOs.assetIVO.attributes.type": "{{classNameIDIT}}",
+                        "policyHeaderIVO.policyIVOsList.policyIVOs.policyLobIVOsList.policyLobIVOs.policyLobAssetIVOsList.policyLobAssetIVOs.assetStatusRef.attributes.id": "{{policyStatus}}",
+                        "policyHeaderIVO.policyIVOsList.policyIVOs.collectionMethodId": "{{paymentMethod}}",
+                        "policyHeaderIVO.policyIVOsList.policyIVOs.paymentTermId": "{{paymentFrequency}}",
+                        "policyHeaderIVO.policyIVOsList.policyIVOs.policyLobIVOsList.policyLobIVOs.policyLobAssetIVOsList.policyLobAssetIVOs.assetIVO.vehicleValue": "{{carMetadata.value}}",
+                        "policyHeaderIVO.policyIVOsList.policyIVOs.policyLobIVOsList.policyLobIVOs.policyLobAssetIVOsList.policyLobAssetIVOs.assetIVO.manufactureVORef.attributes.id": "{{carMetadata.manufacture}}",
+                        "policyHeaderIVO.policyIVOsList.policyIVOs.policyLobIVOsList.policyLobIVOs.policyLobAssetIVOsList.policyLobAssetIVOs.assetStartDate": "{{fromDate}}",
+                        "policyHeaderIVO.policyIVOsList.policyIVOs.policyLobIVOsList.policyLobIVOs.policyLobAssetIVOsList.policyLobAssetIVOs.assetEndDate": "{{toDate}}",
+                        "policyHeaderIVO.productVORef.attributes.id": "{{id}}",
+                        "policyHeaderIVO.policyIVOsList.policyIVOs.policyStartDate": "{{fromDate}}",
+                        "policyHeaderIVO.policyStartDate": "{{fromDate}}",
+                        "policyHeaderIVO.mainRenewalDate": "{{renewDate}}"
+                    },
+                    "soapHeaders": [],
+                    "httpHeaders": {
+                        "userName": "{{$env.userName}}",
+                        "password": "{{$env.password}}"
+                    }
+                }
+            },
+            {
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "planCards.covers{key: relevant ? true: false}",
+                            "targetPath": "result.mappedCovers"
+                        },
+                        {
+                            "jsonata": "[$filter(result.calculatedPremium.policyHeaderIVO.policyIVOsList.policyIVOs.policyLobIVOsList.policyLobIVOs.policyLobAssetIVOsList.policyLobAssetIVOs.coverIVOsList.coverIVOs, function($v, $i, $a) { $lookup(result.mappedCovers, $v.productLineOptionVORef.attributes.id) = true })]",
+                            "targetPath": "result.filteredCoverages"
+                        }
+                    ]
+                }
+            },
+            {
+                "stepType": "mapEnrich",
+                "config": {
+                    "maps": [
+                        {
+                            "sourcePath": "result.filteredCoverages",
+                            "targetPath": "result.calculatedPremium.policyHeaderIVO.0.policyIVOsList.policyIVOs.policyLobIVOsList.policyLobIVOs.policyLobAssetIVOsList.policyLobAssetIVOs.coverIVOsList.coverIVOs",
+                            "regex": null
+                        }
+                    ]
+                }
+            }
+        ],
+        "name": "CalcPremAndCreatePolicy"
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "carMetadata": {
+                "type": "object",
+                "properties": {
+                    "manufacture": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "manufacture": "167",
+                    "value": "40000"
+                },
+                "default": {
+                    "manufacture": "167",
+                    "value": "40000"
+                }
+            },
+            "identifier": {
+                "type": "string"
+            },
+            "identifierRole": {
+                "type": "integer"
+            },
+            "toDate": {
+                "type": "string"
+            },
+            "renewDate": {
+                "type": "string"
+            },
+            "fromDate": {
+                "type": "string"
+            },
+            "id": {
+                "type": "string"
+            },
+            "paymentFrequency": {
+                "type": "string"
+            },
+            "paymentMethod": {
+                "type": "string"
+            },
+            "policyStatus": {
+                "type": "integer"
+            },
+            "productType": {
+                "type": "integer"
+            },
+            "classNameIDIT": {
+                "type": "string"
+            },
+            "planCards": {
+                "type": "object",
+                "properties": {
+                    "covers": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    }
+                },
+                "example": {
+                    "covers": [
+                        {
+                            "cover": "TPL",
+                            "premium": "145.00",
+                            "key": "5000580",
+                            "relevant": true
+                        },
+                        {
+                            "cover": "Driver",
+                            "premium": 0,
+                            "key": "5000583",
+                            "relevant": true
+                        },
+                        {
+                            "cover": "Policy costs",
+                            "premium": 0,
+                            "key": "5000579",
+                            "relevant": false
+                        }
+                    ]
+                },
+                "default": {
+                    "covers": [
+                        {
+                            "cover": "TPL",
+                            "premium": "145.00",
+                            "key": "5000580",
+                            "relevant": true
+                        },
+                        {
+                            "cover": "Driver",
+                            "premium": 0,
+                            "key": "5000583",
+                            "relevant": true
+                        },
+                        {
+                            "cover": "Policy costs",
+                            "premium": 0,
+                            "key": "5000579",
+                            "relevant": false
+                        }
+                    ]
+                }
+            }
+        },
+        "example": {
+            "carMetadata": {
+                "manufacture": "167",
+                "value": "40000"
+            },
+            "identifier": "29424",
+            "identifierRole": 6,
+            "toDate": "2020-05-12",
+            "renewDate": "2020-05-13",
+            "fromDate": "2019-05-13",
+            "id": "5000050",
+            "paymentFrequency": "10019",
+            "paymentMethod": "4",
+            "policyStatus": 10,
+            "productType": 4,
+            "classNameIDIT": "interfaces:VehicleIVO",
+            "planCards": {
+                "covers": [
+                    {
+                        "cover": "TPL",
+                        "premium": "145.00",
+                        "key": "5000580",
+                        "relevant": true
+                    },
+                    {
+                        "cover": "Driver",
+                        "premium": 0,
+                        "key": "5000583",
+                        "relevant": true
+                    },
+                    {
+                        "cover": "Policy costs",
+                        "premium": 0,
+                        "key": "5000579",
+                        "relevant": false
+                    }
+                ]
+            }
+        },
+        "default": {
+            "carMetadata": {
+                "manufacture": "167",
+                "value": "40000"
+            },
+            "identifier": "29424",
+            "identifierRole": 6,
+            "toDate": "2020-05-12",
+            "renewDate": "2020-05-13",
+            "fromDate": "2019-05-13",
+            "id": "5000050",
+            "paymentFrequency": "10019",
+            "paymentMethod": "4",
+            "policyStatus": 10,
+            "productType": 4,
+            "classNameIDIT": "interfaces:VehicleIVO",
+            "planCards": {
+                "covers": [
+                    {
+                        "cover": "TPL",
+                        "premium": "145.00",
+                        "key": "5000580",
+                        "relevant": true
+                    },
+                    {
+                        "cover": "Driver",
+                        "premium": 0,
+                        "key": "5000583",
+                        "relevant": true
+                    },
+                    {
+                        "cover": "Policy costs",
+                        "premium": 0,
+                        "key": "5000579",
+                        "relevant": false
+                    }
+                ]
+            }
+        }
+    },
+    "createDate": "2019-07-01T11:05:42.570Z"
+}

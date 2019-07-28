@@ -1,0 +1,80 @@
+{
+    "name": "test dynamic",
+    "flow": {
+        "name": "test dynamic",
+        "description": "",
+        "steps": [
+            {
+                "stepType": "mapEnrich",
+                "isSelected": false,
+                "config": {
+                    "maps": [
+                        {
+                            "targetPath": "result",
+                            "sourcePath": "somedata",
+                            "regex": null
+                        }
+                    ]
+                }
+            },
+            {
+                "stepType": "apiEnrich",
+                "stepArgs": "restSlim",
+                "isSelected": true,
+                "config": {
+                    "endpoint": {
+                        "url": "http://localhost:{{port}}/getSample/{{path}}",
+                        "method": "GET"
+                    },
+                    "targetPath": "result2"
+                },
+                "condition": "{{condition==true}}"
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "somedata": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "name": "my name"
+                },
+                "default": {
+                    "name": "my name"
+                }
+            },
+            "condition": {
+                "type": "boolean"
+            },
+            "path": {
+                "type": "string"
+            },
+            "port": {
+                "type": "string"
+            }
+        },
+        "example": {
+            "somedata": {
+                "name": "my name"
+            },
+            "condition": true,
+            "path": "getList",
+            "port": "4300"
+        },
+        "default": {
+            "somedata": {
+                "name": "my name"
+            },
+            "condition": true,
+            "path": "getList",
+            "port": "4300"
+        }
+    },
+    "createDate": "2019-07-08T12:42:44.737Z"
+}
