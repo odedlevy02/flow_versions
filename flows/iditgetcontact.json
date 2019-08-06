@@ -1,0 +1,72 @@
+{
+    "name": "iditGetContact",
+    "flow": {
+        "name": "iditGetContact",
+        "description": "A flow to get the details of an IDIT contact. The input of the flow is the contact Id. The result of the flow is an object of the contact details. The flow contains 3 steps.",
+        "steps": [
+            {
+                "stepType": "apiEnrich",
+                "stepArgs": "soapSlim",
+                "config": {
+                    "endpoint": {
+                        "url": "http://idit-ci:7014/idit-web/ws?methodName=GetContactByID&serviceName=IDITServices&wsdl"
+                    },
+                    "method": "IDITServicesGetContactByID.IDITServicesGetContactByIDInterface.IDITServicesGetContactByID",
+                    "targetPath": "result",
+                    "soapRequest": {
+                        "interfaces-root:iDWrapperIVO.attributes.main": "true",
+                        "interfaces-root:iDWrapperIVO.identifier": "{{id}}"
+                    },
+                    "httpHeaders": {
+                        "userName": "{{$env.userName}}",
+                        "password": "{{$env.password}}"
+                    }
+                },
+                "isSelected": false
+            },
+            {
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "result.contactIVO[0] {'firstName': firstName, 'lastName': name, 'title': {'id': titleVORef.attributes.id, 'description': titleVORef.'$value'}, 'gender': {'id': genderVORef.attributes.id, 'description': genderVORef.'$value'}, 'dateOfBirth': dateOfBirth, 'identifiers': $map(contactIdentifierList.contactIdentifier[$exists(discontinueDate)=false], function($v,$i){{'type': {'id': $v.idTypeRef.attributes.id, 'description': $v.idTypeRef.'$value'}, 'value': $v.idValue}}), 'affinites': $map(contactAffinityMembershipList.contactAffinityMembership[[$exists(discontinueDate)=false] and affinityVORef.attributes.id != '0' and affinityVORef.attributes.id != '1' and affinityVORef.attributes.id != '2'], function($v,$i){{'type': {'id': $v.affinityVORef.attributes.id, 'description': $v.affinityVORef.'$value'}, 'membershipId': $v.membershipId}}), 'bankAccounts': $map(contactBankAccountList.contactBankAccount[$exists(discontinueDate)=false and paymentChanelVORef.attributes.id='1'], function($v,$i){{'country': {'id': $v.countryVORef.attributes.id, 'description': $v.countryVORef.'$value'}, 'bankAccountExternalNumber': $v.bankAccountExternalNumber, 'bankName': $v.bankName, 'branchName': $v.branchName, 'accountNumberLastDigits': $v.accountNrLastDigits, 'ibanCode': $v.ibanReference, 'bicCode': $v.bicCode, 'swiftCode': $v.swiftCode}}), 'creditCards': $map(contactBankAccountList.contactBankAccount[$exists(discontinueDate)=false and paymentChanelVORef.attributes.id='2'], function($v,$i){{'country': {'id': $v.countryVORef.attributes.id, 'description': $v.countryVORef.'$value'}, 'cardType': $v.bankName, 'cardNumberLastDigits': $v.accountNrLastDigits, 'validDate': $v.validDate, 'cvcCode': $v.cvcCode, 'holderName': $v.creditCardHolderName}}), 'addresses': $map(contactAddressList.contactAddress[$exists(discontinueDate)=false], function($v,$i){{'city':$v.addressIVO.cityName, 'street':$v.addressIVO.streetName, 'house':$v.addressIVO.houseNr, 'addressLine2': $v.addressIVO.apartmentNr, 'country': {'id': $v.addressIVO.countryVORef.attributes.id, 'description': $v.addressIVO.countryVORef.'$value'}, 'postalCode':$v.addressIVO.zipCode, 'addressType': {'id': $v.addressTypeVORef.attributes.id, 'description': $v.addressTypeVORef.'$value'}}}), 'telephoneNumbers': $map(contactTelephoneList.contactTelephone[$exists(discontinueDate)=false], function($v,$i){{'telephoneNumber': $v.telephoneNumber, 'countryDialCode': {'id': $v.countryDialCodeRef.attributes.id, 'description': $v.countryDialCodeRef.'$value'}, 'telephonePrefix': $v.telephonePrefix, 'telephoneType': {'id': $v.telephoneTypeRef.attributes.id, 'description': $v.telephoneTypeRef.'$value'}}}), 'emails': $map(contactEmailList.contactEmail[$exists(discontinueDate)=false], function($v,$i){{'email': $v.email, 'emailType': {'id': $v.emailTypeVORef.attributes.id, 'description': $v.emailTypeVORef.'$value'}}}), 'preferredContactMethod': {'id': preferredDeliveryTypeRef.attributes.id, 'description': preferredDeliveryTypeRef.'$value'}, 'preferredContactMethodDetails': preferredDeliveryAddressVO {'city': addressIVO.cityName, 'street': addressIVO.streetName, 'house': addressIVO.houseNr, 'addressLine2': addressIVO.apartmentNr, 'country': {'id': addressIVO.countryVORef.attributes.id, 'description': addressIVO.countryVORef.'$value'}, 'postalCode': addressIVO.zipCode, 'addressType': {'id': addressTypeVORef.attributes.id, 'description': addressTypeVORef.'$value'}, 'telephoneNumber': telephoneNumber, 'countryDialCode': {'id': countryDialCodeRef.attributes.id, 'description': countryDialCodeRef.'$value'}, 'telephonePrefix': telephonePrefix, 'telephoneType': {'id': telephoneTypeRef.attributes.id, 'description': telephoneTypeRef.'$value'}, 'email': email, 'emailType': {'id': emailTypeVORef.attributes.id, 'description': emailTypeVORef.'$value'}}}",
+                            "targetPath": "result.contact"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "decription": "delete input and web service result data from the doc",
+                "stepType": "removedata",
+                "config": {
+                    "paths": [
+                        {
+                            "removePath": "id"
+                        },
+                        {
+                            "removePath": "result.contactIVO"
+                        }
+                    ]
+                },
+                "isSelected": true
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string"
+            }
+        },
+        "example": {
+            "id": "404634"
+        },
+        "default": {
+            "id": "404634"
+        }
+    },
+    "createDate": "2019-07-10T13:51:32.731Z"
+}

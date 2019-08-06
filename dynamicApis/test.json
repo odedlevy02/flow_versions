@@ -1,0 +1,9 @@
+{
+    "path": "test",
+    "verb": "GET",
+    "flow": "flow1",
+    "tag": "Flows",
+    "dataModel": {
+        "name": "dan"
+    }
+}

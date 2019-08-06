@@ -1,0 +1,570 @@
+{
+    "name": "test folksam",
+    "flow": {
+        "name": "test folksam",
+        "description": "",
+        "steps": [
+            {
+                "stepType": "mapEnrich",
+                "config": {
+                    "maps": [
+                        {
+                            "targetPath": "policyHeaderIVO",
+                            "value": {
+                                "attributes": {
+                                    "main": true
+                                },
+                                "policyStartDate": "1899-12-30T22:23:26.000Z",
+                                "policyEndDate": "1899-12-30T22:23:26.000Z",
+                                "mainRenewalDate": "1899-12-30T22:23:26.000Z",
+                                "statusCollDate": "1899-12-30T22:23:26.000Z",
+                                "policyIVOsList": {
+                                    "policyIVOs": [
+                                        {
+                                            "policyStartDate": "1899-12-30T22:23:26.000Z",
+                                            "policyEndDate": "1899-12-30T22:23:26.000Z",
+                                            "endorsStartDate": "1899-12-30T22:23:26.000Z",
+                                            "endorsEndDate": "1899-12-30T22:23:26.000Z",
+                                            "currencyVORef": {
+                                                "attributes": {
+                                                    "id": 1000002
+                                                }
+                                            },
+                                            "statusCodeVORef": {
+                                                "attributes": {
+                                                    "id": 10
+                                                }
+                                            },
+                                            "policyLobIVOsList": {
+                                                "policyLobIVOs": [
+                                                    {
+                                                        "lobVORef": {
+                                                            "attributes": {
+                                                                "id": -1
+                                                            }
+                                                        },
+                                                        "productVersionLobVORef": {
+                                                            "attributes": {
+                                                                "id": -1
+                                                            }
+                                                        },
+                                                        "policyLobAssetIVOsList": {
+                                                            "policyLobAssetIVOs": [
+                                                                {
+                                                                    "assetEndDate": "1899-12-30T22:23:26.000Z",
+                                                                    "assetStartDate": "1899-12-30T22:23:26.000Z",
+                                                                    "assetStatusRef": {
+                                                                        "attributes": {
+                                                                            "id": 10
+                                                                        }
+                                                                    },
+                                                                    "customerAssetNr": 1,
+                                                                    "calculationMethodVORef": {
+                                                                        "attributes": {
+                                                                            "id": 1
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "policyContactIVOsList": {
+                                                "policyContactIVOs": [
+                                                    {
+                                                        "contactExtNum": "",
+                                                        "policyContactRoleVORef": {
+                                                            "attributes": {
+                                                                "id": 6
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "collectionMethodId": 1000002,
+                                            "paymentTermId": 1000003,
+                                            "currentChannelVORef": {
+                                                "attributes": {
+                                                    "id": 10001
+                                                }
+                                            },
+                                            "originalChannelVORef": {
+                                                "attributes": {
+                                                    "id": 10001
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "currencyVORef": {
+                                    "attributes": {
+                                        "id": 1000002
+                                    }
+                                },
+                                "productVORef": {
+                                    "attributes": {
+                                        "id": 1000052
+                                    }
+                                },
+                                "policyHandlingLevelVO": {
+                                    "attributes": {
+                                        "id": 1
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "stepType": "codeenrich",
+                "isSelected": true,
+                "description": "set now in policy.startDate",
+                "config": {
+                    "codeBlock": "let now = new Date(new Date().setUTCHours(0,0,0,0));\nif(!policy.startDate){\n  policy.startDate = now;\n}"
+                }
+            },
+            {
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "\n                    (\n                        $defaultData := $exists(policy.startDate);\n                        $defaultData = true\n                            ? policy.startDate\n                            : ($millis() + 1000 * 60 * 60 * 24) ~> $fromMillis('[Y]-[M01]-[D01]T00:00:00')\n                    )\n                ",
+                            "targetPath": "policy.startDate"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "stepType": "dateenrich",
+                "config": {
+                    "maps": [
+                        {
+                            "sourcePath": "policy.startDate",
+                            "targetPath": "policy.renewalDate",
+                            "manipulate": {
+                                "action": "add",
+                                "amount": 1,
+                                "amountType": "year"
+                            }
+                        },
+                        {
+                            "sourcePath": "policy.renewalDate",
+                            "targetPath": "policy.endDate",
+                            "manipulate": {
+                                "action": "subtract",
+                                "amount": 1,
+                                "amountType": "second"
+                            }
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "stepType": "mapEnrich",
+                "config": {
+                    "maps": [
+                        {
+                            "sourcePath": "policy.startDate",
+                            "targetPath": "policyHeaderIVO.policyStartDate"
+                        },
+                        {
+                            "sourcePath": "policy.startDate",
+                            "targetPath": "policyHeaderIVO.statusCollDate"
+                        },
+                        {
+                            "sourcePath": "policy.endDate",
+                            "targetPath": "policyHeaderIVO.policyEndDate"
+                        },
+                        {
+                            "sourcePath": "policy.renewalDate",
+                            "targetPath": "policyHeaderIVO.mainRenewalDate"
+                        },
+                        {
+                            "sourcePath": "policy.startDate",
+                            "targetPath": "policyHeaderIVO.policyIVOsList.policyIVOs.0.policyStartDate"
+                        },
+                        {
+                            "sourcePath": "policy.endDate",
+                            "targetPath": "policyHeaderIVO.policyIVOsList.policyIVOs.0.policyEndDate"
+                        },
+                        {
+                            "sourcePath": "policy.startDate",
+                            "targetPath": "policyHeaderIVO.policyIVOsList.policyIVOs.0.endorsStartDate"
+                        },
+                        {
+                            "sourcePath": "policy.endDate",
+                            "targetPath": "policyHeaderIVO.policyIVOsList.policyIVOs.0.endorsEndDate"
+                        },
+                        {
+                            "sourcePath": "contact.externalContactNumber",
+                            "targetPath": "policyHeaderIVO.policyIVOsList.policyIVOs.0.policyContactIVOsList.policyContactIVOs.0.contactExtNum"
+                        },
+                        {
+                            "sourcePath": "policy.startDate",
+                            "targetPath": "policyHeaderIVO.policyIVOsList.policyIVOs.0.policyLobIVOsList.policyLobIVOs.0.policyLobAssetIVOsList.policyLobAssetIVOs.0.assetStartDate"
+                        },
+                        {
+                            "sourcePath": "policy.endDate",
+                            "targetPath": "policyHeaderIVO.policyIVOsList.policyIVOs.0.policyLobIVOsList.policyLobIVOs.0.policyLobAssetIVOsList.policyLobAssetIVOs.0.assetEndDate"
+                        }
+                    ]
+                },
+                "isSelected": false
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "policy": {
+                "type": "object",
+                "properties": {
+                    "productId": {
+                        "type": "integer"
+                    },
+                    "covers": {
+                        "type": "object",
+                        "properties": {
+                            "basicOrExtended": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "integer"
+                                    },
+                                    "selected": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "example": {
+                                    "id": 1000268,
+                                    "selected": true
+                                },
+                                "default": {
+                                    "id": 1000268,
+                                    "selected": true
+                                }
+                            }
+                        },
+                        "example": {
+                            "basicOrExtended": {
+                                "id": 1000268,
+                                "selected": true
+                            }
+                        },
+                        "default": {
+                            "basicOrExtended": {
+                                "id": 1000268,
+                                "selected": true
+                            }
+                        }
+                    },
+                    "insuredObject": {
+                        "type": "object",
+                        "properties": {
+                            "isNewsletterSubscriber": {
+                                "type": "boolean"
+                            },
+                            "contact": {
+                                "type": "object",
+                                "properties": {
+                                    "ssn": {
+                                        "type": "string"
+                                    },
+                                    "dateOfBirth": {
+                                        "type": "string"
+                                    },
+                                    "phoneNumber": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "externalContactNumber": {
+                                        "type": "string"
+                                    },
+                                    "ageAtEffectiveDate": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "example": {
+                                    "ssn": "7876446456",
+                                    "dateOfBirth": "1985-12-13T00:00:00",
+                                    "phoneNumber": [
+                                        "123456789"
+                                    ],
+                                    "externalContactNumber": "IKQ807726D",
+                                    "ageAtEffectiveDate": 33
+                                },
+                                "default": {
+                                    "ssn": "7876446456",
+                                    "dateOfBirth": "1985-12-13T00:00:00",
+                                    "phoneNumber": [
+                                        "123456789"
+                                    ],
+                                    "externalContactNumber": "IKQ807726D",
+                                    "ageAtEffectiveDate": 33
+                                }
+                            },
+                            "noOfWeekPregnant": {
+                                "type": "integer"
+                            },
+                            "estimatedDeliveryDate": {
+                                "type": "string"
+                            }
+                        },
+                        "example": {
+                            "isNewsletterSubscriber": true,
+                            "contact": {
+                                "ssn": "7876446456",
+                                "dateOfBirth": "1985-12-13T00:00:00",
+                                "phoneNumber": [
+                                    "123456789"
+                                ],
+                                "externalContactNumber": "IKQ807726D",
+                                "ageAtEffectiveDate": 33
+                            },
+                            "noOfWeekPregnant": 12,
+                            "estimatedDeliveryDate": "2019-12-20T00:00:00+01:00"
+                        },
+                        "default": {
+                            "isNewsletterSubscriber": true,
+                            "contact": {
+                                "ssn": "7876446456",
+                                "dateOfBirth": "1985-12-13T00:00:00",
+                                "phoneNumber": [
+                                    "123456789"
+                                ],
+                                "externalContactNumber": "IKQ807726D",
+                                "ageAtEffectiveDate": 33
+                            },
+                            "noOfWeekPregnant": 12,
+                            "estimatedDeliveryDate": "2019-12-20T00:00:00+01:00"
+                        }
+                    }
+                },
+                "example": {
+                    "productId": 1000011,
+                    "covers": {
+                        "basicOrExtended": {
+                            "id": 1000268,
+                            "selected": true
+                        }
+                    },
+                    "insuredObject": {
+                        "isNewsletterSubscriber": true,
+                        "contact": {
+                            "ssn": "7876446456",
+                            "dateOfBirth": "1985-12-13T00:00:00",
+                            "phoneNumber": [
+                                "123456789"
+                            ],
+                            "externalContactNumber": "IKQ807726D",
+                            "ageAtEffectiveDate": 33
+                        },
+                        "noOfWeekPregnant": 12,
+                        "estimatedDeliveryDate": "2019-12-20T00:00:00+01:00"
+                    }
+                },
+                "default": {
+                    "productId": 1000011,
+                    "covers": {
+                        "basicOrExtended": {
+                            "id": 1000268,
+                            "selected": true
+                        }
+                    },
+                    "insuredObject": {
+                        "isNewsletterSubscriber": true,
+                        "contact": {
+                            "ssn": "7876446456",
+                            "dateOfBirth": "1985-12-13T00:00:00",
+                            "phoneNumber": [
+                                "123456789"
+                            ],
+                            "externalContactNumber": "IKQ807726D",
+                            "ageAtEffectiveDate": 33
+                        },
+                        "noOfWeekPregnant": 12,
+                        "estimatedDeliveryDate": "2019-12-20T00:00:00+01:00"
+                    }
+                }
+            },
+            "contact": {
+                "type": "object",
+                "properties": {
+                    "firstName": {
+                        "type": "string"
+                    },
+                    "lastName": {
+                        "type": "string"
+                    },
+                    "externalContactNumber": {
+                        "type": "string"
+                    },
+                    "phoneNumber": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "emailAddress": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "gender": {
+                        "type": "string"
+                    },
+                    "ssn": {
+                        "type": "string"
+                    },
+                    "dateOfBirth": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "firstName": "firstNameGP-ADBM",
+                    "lastName": "lastNameGP-ADBM",
+                    "externalContactNumber": "IKQ807726D",
+                    "phoneNumber": [
+                        {
+                            "phone": "123456789",
+                            "countryCode": "46"
+                        },
+                        {
+                            "phone": "28341526",
+                            "countryCode": "46"
+                        }
+                    ],
+                    "emailAddress": [
+                        "test@gmail.com"
+                    ],
+                    "gender": "Female",
+                    "ssn": "7876446456",
+                    "dateOfBirth": "1985-12-13T00:00:00"
+                },
+                "default": {
+                    "firstName": "firstNameGP-ADBM",
+                    "lastName": "lastNameGP-ADBM",
+                    "externalContactNumber": "IKQ807726D",
+                    "phoneNumber": [
+                        {
+                            "phone": "123456789",
+                            "countryCode": "46"
+                        },
+                        {
+                            "phone": "28341526",
+                            "countryCode": "46"
+                        }
+                    ],
+                    "emailAddress": [
+                        "test@gmail.com"
+                    ],
+                    "gender": "Female",
+                    "ssn": "7876446456",
+                    "dateOfBirth": "1985-12-13T00:00:00"
+                }
+            }
+        },
+        "example": {
+            "policy": {
+                "productId": 1000011,
+                "covers": {
+                    "basicOrExtended": {
+                        "id": 1000268,
+                        "selected": true
+                    }
+                },
+                "insuredObject": {
+                    "isNewsletterSubscriber": true,
+                    "contact": {
+                        "ssn": "7876446456",
+                        "dateOfBirth": "1985-12-13T00:00:00",
+                        "phoneNumber": [
+                            "123456789"
+                        ],
+                        "externalContactNumber": "IKQ807726D",
+                        "ageAtEffectiveDate": 33
+                    },
+                    "noOfWeekPregnant": 12,
+                    "estimatedDeliveryDate": "2019-12-20T00:00:00+01:00"
+                }
+            },
+            "contact": {
+                "firstName": "firstNameGP-ADBM",
+                "lastName": "lastNameGP-ADBM",
+                "externalContactNumber": "IKQ807726D",
+                "phoneNumber": [
+                    {
+                        "phone": "123456789",
+                        "countryCode": "46"
+                    },
+                    {
+                        "phone": "28341526",
+                        "countryCode": "46"
+                    }
+                ],
+                "emailAddress": [
+                    "test@gmail.com"
+                ],
+                "gender": "Female",
+                "ssn": "7876446456",
+                "dateOfBirth": "1985-12-13T00:00:00"
+            }
+        },
+        "default": {
+            "policy": {
+                "productId": 1000011,
+                "covers": {
+                    "basicOrExtended": {
+                        "id": 1000268,
+                        "selected": true
+                    }
+                },
+                "insuredObject": {
+                    "isNewsletterSubscriber": true,
+                    "contact": {
+                        "ssn": "7876446456",
+                        "dateOfBirth": "1985-12-13T00:00:00",
+                        "phoneNumber": [
+                            "123456789"
+                        ],
+                        "externalContactNumber": "IKQ807726D",
+                        "ageAtEffectiveDate": 33
+                    },
+                    "noOfWeekPregnant": 12,
+                    "estimatedDeliveryDate": "2019-12-20T00:00:00+01:00"
+                }
+            },
+            "contact": {
+                "firstName": "firstNameGP-ADBM",
+                "lastName": "lastNameGP-ADBM",
+                "externalContactNumber": "IKQ807726D",
+                "phoneNumber": [
+                    {
+                        "phone": "123456789",
+                        "countryCode": "46"
+                    },
+                    {
+                        "phone": "28341526",
+                        "countryCode": "46"
+                    }
+                ],
+                "emailAddress": [
+                    "test@gmail.com"
+                ],
+                "gender": "Female",
+                "ssn": "7876446456",
+                "dateOfBirth": "1985-12-13T00:00:00"
+            }
+        }
+    },
+    "createDate": "2019-07-10T15:05:30.195Z"
+}
