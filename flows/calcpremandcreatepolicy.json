@@ -6,11 +6,7 @@
                 "stepType": "dateenrich",
                 "config": {
                     "maps": [
-                        {
-                            "sourcePath": "fromDate",
-                            "format": "YYYY-MM-DDT",
-                            "targetPath": "fromDate"
-                        },
+                      
                         {
                             "sourcePath": "renewDate",
                             "format": "YYYY-MM-DDT00:00:00",
@@ -34,7 +30,7 @@
                     "method": "IDITServicesPremiumCalculate.IDITServicesPremiumCalculateInterface.IDITServicesPremiumCalculate",
                     "targetPath": "result.calculatedPremium",
                     "soapRequest": {
-                        "policyHeaderIVO.attributes.main": "true",
+                        "policyHeaderIVO.attributes.main": "false",
                         "policyHeaderIVO.isMasterPolicy": "false",
                         "policyHeaderIVO.policyIVOsList.policyIVOs.policyContactIVOsList.policyContactIVOs.contactExtNum": "{{identifier}}",
                         "policyHeaderIVO.policyIVOsList.policyIVOs.policyContactIVOsList.policyContactIVOs.policyContactRoleVORef.attributes.id": "{{identifierRole}}",
