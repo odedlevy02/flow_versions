@@ -2,8 +2,8 @@
     "path": "/test",
     "verb": "GET",
     "flow": "flow1",
-    "tag": "Flows",
+    "tag": "flows2",
     "dataModel": {
-        "name": "dan"
+        "name": "lev"
     }
 }
