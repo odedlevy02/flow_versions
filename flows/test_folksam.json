@@ -12,7 +12,7 @@
                             "targetPath": "policyHeaderIVO",
                             "value": {
                                 "attributes": {
-                                    "main": true
+                                    "main": false
                                 },
                                 "policyStartDate": "1899-12-30T22:23:26.000Z",
                                 "policyEndDate": "1899-12-30T22:23:26.000Z",
