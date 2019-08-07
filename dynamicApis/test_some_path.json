@@ -1,6 +1,6 @@
 {
     "path": "/test/some/path",
-    "verb": "GET",
+    "verb": "POST",
     "flow": "flow2",
     "tag": "Flows",
     "dataModel": {
