@@ -17,7 +17,8 @@
                             "targetPath": "toDate"
                         }
                     ]
-                }
+                },
+                "isSelected": true
             },
             {
                 "stepType": "apiEnrich",
@@ -53,7 +54,8 @@
                         "userName": "{{$env.userName}}",
                         "password": "{{$env.password}}"
                     }
-                }
+                },
+                "isSelected": false
             },
             {
                 "stepType": "mapEnrich",
@@ -69,7 +71,8 @@
                             "targetPath": "result.filteredCoverages"
                         }
                     ]
-                }
+                },
+                "isSelected": false
             },
             {
                 "stepType": "mapEnrich",
@@ -81,7 +84,8 @@
                             "regex": null
                         }
                     ]
-                }
+                },
+                "isSelected": false
             }
         ],
         "name": "CalcPremAndCreatePolicy"
@@ -100,11 +104,11 @@
                     }
                 },
                 "example": {
-                    "manufacture": "167",
+                    "manufacture": "oded",
                     "value": "40000"
                 },
                 "default": {
-                    "manufacture": "167",
+                    "manufacture": "oded",
                     "value": "40000"
                 }
             },
@@ -199,7 +203,7 @@
         },
         "example": {
             "carMetadata": {
-                "manufacture": "167",
+                "manufacture": "oded",
                 "value": "40000"
             },
             "identifier": "29424",
@@ -238,7 +242,7 @@
         },
         "default": {
             "carMetadata": {
-                "manufacture": "167",
+                "manufacture": "oded",
                 "value": "40000"
             },
             "identifier": "29424",
