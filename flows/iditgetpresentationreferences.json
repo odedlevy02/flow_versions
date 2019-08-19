@@ -1,0 +1,146 @@
+{
+    "name": "iditGetPresentationReferences",
+    "flow": {
+        "name": "iditGetPresentationReferences",
+        "description": "",
+        "steps": [
+            {
+                "stepType": "mapEnrich",
+                "isSelected": false,
+                "description": "map input",
+                "config": {
+                    "maps": [
+                        {
+                            "targetPath": "presentationReferenceWrapperIVO.attributes.main",
+                            "value": "true",
+                            "regex": null
+                        },
+                        {
+                            "targetPath": "presentationReferenceWrapperIVO.externalID",
+                            "sourcePath": "entityId",
+                            "regex": null
+                        }
+                    ]
+                }
+            },
+            {
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "isSelected": false,
+                "description": "map optional input",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "country",
+                            "targetPath": "presentationReferenceWrapperIVO.country"
+                        },
+                        {
+                            "jsonata": "language",
+                            "targetPath": "presentationReferenceWrapperIVO.lang"
+                        },
+                        {
+                            "jsonata": "additionalFields",
+                            "targetPath": "presentationReferenceWrapperIVO.fieldsList.fields"
+                        }
+                    ]
+                }
+            },
+            {
+                "description": "call IDIT GetPresentationReference service to get preffered delivery types",
+                "stepType": "apiEnrich",
+                "stepArgs": "soapSlim",
+                "config": {
+                    "endpoint": {
+                        "url": "http://{{$env.URL}}/idit-web/ws?serviceName=IDITServices&methodName=GetPresentationReference&wsdl"
+                    },
+                    "method": "IDITServicesGetPresentationReference.IDITServicesGetPresentationReferenceInterface.IDITServicesGetPresentationReference",
+                    "targetPath": "result",
+                    "soapRequest": {
+                        "presentationReferenceWrapperIVO": "{{presentationReferenceWrapperIVO}}"
+                    },
+                    "httpHeaders": {
+                        "userName": "{{$env.userName}}",
+                        "password": "{{$env.password}}"
+                    }
+                },
+                "isSelected": false
+            },
+            {
+                "stepType": "removeData",
+                "isSelected": true,
+                "config": {
+                    "paths": [
+                        {
+                            "removePath": "entityId"
+                        },
+                        {
+                            "removePath": "country"
+                        },
+                        {
+                            "removePath": "language"
+                        },
+                        {
+                            "removePath": "additionalFields"
+                        },
+                        {
+                            "removePath": "presentationReferenceWrapperIVO"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "entityId": {
+                "type": "string"
+            },
+            "country": {
+                "type": "string"
+            },
+            "language": {
+                "type": "string"
+            },
+            "additionalFields": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "fieldName": {
+                            "type": "string"
+                        }
+                    },
+                    "example": {
+                        "fieldName": "collectionMethodId"
+                    },
+                    "default": {
+                        "fieldName": "collectionMethodId"
+                    }
+                }
+            }
+        },
+        "example": {
+            "entityId": "1112",
+            "country": "EN",
+            "language": "en",
+            "additionalFields": [
+                {
+                    "fieldName": "collectionMethodId"
+                }
+            ]
+        },
+        "default": {
+            "entityId": "1112",
+            "country": "EN",
+            "language": "en",
+            "additionalFields": [
+                {
+                    "fieldName": "collectionMethodId"
+                }
+            ]
+        }
+    },
+    "createDate": "2019-08-11T12:36:42.837Z",
+    "tag": null
+}

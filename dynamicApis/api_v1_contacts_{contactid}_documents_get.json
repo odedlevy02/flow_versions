@@ -1,0 +1,22 @@
+{
+    "path": "/api/v1/contacts/{contactId}/documents",
+    "verb": "GET",
+    "flow": "iditGetContactDocuments",
+    "tag": "Contact",
+    "summary": "Get contact documents",
+    "responseDescription": "List of documents",
+    "dataModel": [],
+    "responseSchema": {
+        "listDocuments": [
+            {
+                "documentName": "Policy Contract.xml",
+                "documentType": {
+                    "id": "5000000",
+                    "description": "Policy Contract"
+                },
+                "documentReceiptDate": "2009-09-07T17:17:15",
+                "documentURL": ""
+            }
+        ]
+    }
+}

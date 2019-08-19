@@ -1,0 +1,123 @@
+{
+    "name": "iditGetPaymentTerms",
+    "flow": {
+        "name": "iditGetPaymentTerms",
+        "description": "A flow to get policy or product payment terms. The input is policy Id or product Id.  The output is a list of payment terms.",
+        "steps": [
+            {
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "description": "map the input fields",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "policyId",
+                            "targetPath": "queryParams.policyHeaderId"
+                        },
+                        {
+                            "jsonata": "productId",
+                            "targetPath": "queryParams.productCode"
+                        },
+                        {
+                            "jsonata": "sessionId",
+                            "targetPath": "httpHeaders.messageCorrelationId"
+                        }
+                    ]
+                },
+                "isSelected": false,
+                "isChecked": true
+            },
+            {
+                "stepType": "mapEnrich",
+                "description": "map user and pass http headers",
+                "config": {
+                    "maps": [
+                        {
+                            "targetPath": "httpHeaders.userName",
+                            "value": "{{$env.userName}}",
+                            "regex": null
+                        },
+                        {
+                            "targetPath": "httpHeaders.password",
+                            "value": "{{$env.password}}",
+                            "regex": null
+                        }
+                    ]
+                },
+                "isSelected": false,
+                "isChecked": true
+            },
+            {
+                "stepType": "apiEnrich",
+                "stepArgs": "restSlim",
+                "description": "A call to IDIT getPaymentTerms service",
+                "config": {
+                    "endpoint": {
+                        "url": "http://idit-ci:7014/idit-web/api/productServices/paymentTermsByPolicy"
+                    },
+                    "targetPath": "result",
+                    "queryParams": "{{queryParams}}",
+                    "headers": "{{httpHeaders}}"
+                },
+                "isSelected": false,
+                "isChecked": true
+            },
+            {
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "description": "format the final result",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "result {'paymentTerms': $map(presentationReferences, function($v,$i){{'paymentTermId': $v.id, 'paymentTerm': $v.value, 'numberOfInstallments': $v.fields[fieldName='numberOfInstallments'].fieldValue, 'paymentFrequency': $v.fields[fieldName='frequency'].fieldValue  & ' ' & $v.fields[fieldName='frequencyTypeDescriptionField'].fieldValue, 'paymentAmount': $v.fields[fieldName='paymentAmount'].fieldValue, 'collectionMethodId': $v.fields[fieldName='collectionMethodId'].fieldValue, 'collectionMethodDescription': $v.fields[fieldName='collectionMethodDescription'].fieldValue, 'isShortTerm': $v.fields[fieldName='shortTermFlag'].fieldValue, 'isConditional': $v.fields[fieldName='isConditional'].fieldValue}})}",
+                            "targetPath": "result"
+                        }
+                    ]
+                },
+                "isSelected": true,
+                "isChecked": true
+            },
+            {
+                "stepType": "removeData",
+                "description": "delete initial and intermediate data",
+                "config": {
+                    "paths": [
+                        {
+                            "removePath": "queryParams"
+                        },
+                        {
+                            "removePath": "httpHeaders"
+                        },
+                        {
+                            "removePath": "sessionId"
+                        },
+                        {
+                            "removePath": "policyId"
+                        },
+                        {
+                            "removePath": "productId"
+                        }
+                    ]
+                },
+                "isSelected": false,
+                "isChecked": true
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "productId": {
+                "type": "string"
+            }
+        },
+        "example": {
+            "productId": "coverPlan"
+        },
+        "default": {
+            "productId": "coverPlan"
+        }
+    },
+    "createDate": "2019-08-11T12:36:42.749Z",
+    "tag": null
+}

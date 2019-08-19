@@ -1,0 +1,39 @@
+{
+    "name": "soapflow",
+    "flow": {
+        "name": "soapflow",
+        "description": "",
+        "steps": [
+            {
+                "stepType": "apiEnrich",
+                "stepArgs": "soapSlim",
+                "isSelected": true,
+                "config": {
+                    "endpoint": {
+                        "url": "http://iditsalesdemo01.sapiens.com/idit-web//ws?serviceName=IDITServices&methodName=PremiumCalculate&wsdl"
+                    },
+                    "method": "IDITServicesPremiumCalculate.IDITServicesPremiumCalculateInterface.IDITServicesPremiumCalculate",
+                    "targetPath": "target",
+                    "soapRequest": {
+                        "policyHeaderIVO.0.attributes.main": true,
+                        "policyHeaderIVO.0.policyIVOsList.policyIVOs.policyLobIVOsList.policyLobIVOs.lobVORef.attributes.id": "4",
+                        "policyHeaderIVO.0.policyIVOsList.policyIVOs.policyLobIVOsList.policyLobIVOs.policyLobAssetIVOsList.policyLobAssetIVOs.0.assetIVO.attributes.type": "interfaces:VehicleIVO",
+                        "policyHeaderIVO.0.isMasterPolicy": "false",
+                        "policyHeaderIVO.0.productVORef.attributes.id": "{{id}}",
+                        "policyHeaderIVO.0.policyStartDate": "{{policyStartDate}}",
+                        "policyHeaderIVO.0.policyIVOsList.policyIVOs.policyStartDate": "{{policyStartDate}}",
+                        "policyHeaderIVO.0.mainRenewalDate": "{{mainRenewalDate}}",
+                        "policyHeaderIVO.0.policyIVOsList.policyIVOs.policyLobIVOsList.policyLobIVOs.policyLobAssetIVOsList.policyLobAssetIVOs.0.assetIVO.vehicleValue": "{{vehicleValue}}"
+                    }
+                }
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "example": {},
+        "default": {}
+    },
+    "createDate": "2019-08-14T11:12:44.652Z",
+    "tag": null
+}

@@ -1,0 +1,73 @@
+{
+    "name": "iditGetListOfPolicies",
+    "flow": {
+        "name": "iditGetListOfPolicies",
+        "description": "",
+        "steps": [
+            {
+                "stepType": "mapEnrich",
+                "condition": "{{contactId != ''}}",
+                "config": {
+                    "maps": [
+                        {
+                            "value": 6,
+                            "targetPath": "role"
+                        }
+                    ]
+                },
+                "isSelected": true
+            },
+            {
+                "stepType": "apiEnrich",
+                "stepArgs": "soapSlim",
+                "config": {
+                    "endpoint": {
+                        "url": "http://idit-ci:7014/idit-web/ws?methodName=search&serviceName=IDITServices&wsdl"
+                    },
+                    "method": "IDITServicessearch.IDITServicessearchInterface.IDITServicessearch",
+                    "targetPath": "result.listPolicies",
+                    "soapRequest": {
+                        "searchIVO.attributes.main": "true",
+                        "searchIVO.finderKey": "2",
+                        "searchIVO.contactId": "{{contactId}}",
+                        "searchIVO.policyContactRole": "{{role}}"
+                    },
+                    "httpHeaders": {
+                        "userName": "{{$env.userName}}",
+                        "password": "{{$env.password}}"
+                    }
+                },
+                "isSelected": false
+            },
+            {
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "$map(result.listPolicies.multiEntityContainerIVO.policyInListIVOList.policyInListIVO,function($v,$i){ { 'product': { 'id': $v.productId, 'description' : $v.productVORef.'$value' }, 'policyNumber' : $v.policyNr, 'effectiveDate' : $v.policyStartDate, 'endDate': $v.endDate, 'policyHolderName': $v.policyOwnerName, 'status':{ 'id':$v.statusCodeVORef.attributes.id, 'description': $v.statusCodeVORef.'$value' } } })",
+                            "targetPath": "result.listPolicies"
+                        }
+                    ]
+                },
+                "isSelected": false
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "contactId": {
+                "type": "string"
+            }
+        },
+        "example": {
+            "contactId": "28898"
+        },
+        "default": {
+            "contactId": "28898"
+        }
+    },
+    "createDate": "2019-08-11T12:36:42.667Z",
+    "tag": null
+}

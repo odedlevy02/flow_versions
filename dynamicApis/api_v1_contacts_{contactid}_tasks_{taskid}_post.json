@@ -1,0 +1,11 @@
+{
+    "path": "/api/v1/contacts/{contactId}/tasks/{taskId}",
+    "verb": "POST",
+    "flow": "iditCreateTaskForContact",
+    "tag": "Contact",
+    "summary": "Create task for contact",
+    "responseDescription": "Success indicator",
+    "responseSchema": {
+        "taskCreated": true
+    }
+}

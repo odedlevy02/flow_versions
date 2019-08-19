@@ -1,0 +1,134 @@
+{
+    "name": "iditCreateTaskForPolicy",
+    "flow": {
+        "name": "iditCreateTaskForPolicy",
+        "description": "A flow to create a task for policy",
+        "steps": [
+            {
+                "description": "map service base params",
+                "stepType": "mapEnrich",
+                "config": {
+                    "maps": [
+                        {
+                            "value": "{{$env.URL}}",
+                            "targetPath": "serviceParams.endpointUrlHost"
+                        },
+                        {
+                            "value": "IDITServices",
+                            "targetPath": "serviceParams.serviceName"
+                        },
+                        {
+                            "value": {
+                                "userName": "{{$env.userName}}",
+                                "password": "{{$env.password}}"
+                            },
+                            "targetPath": "serviceParams.httpHeaders"
+                        }
+                    ]
+                },
+                "isSelected": false,
+                "isChecked": true
+            },
+            {
+                "description": "map the task entities list",
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "policyId",
+                            "targetPath": "intermediateData.taskEntities.0.identifier"
+                        },
+                        {
+                            "jsonata": "'285'",
+                            "targetPath": "intermediateData.taskEntities.0.entityNr"
+                        },
+                        {
+                            "jsonata": "entityExternalNumber",
+                            "targetPath": "intermediateData.taskEntities.0.externalID"
+                        }
+                    ]
+                },
+                "isSelected": true,
+                "isChecked": true
+            },
+            {
+                "stepType": "apiEnrich",
+                "stepArgs": "restSlim",
+                "isSelected": false,
+                "description": "call IDIT service to trigger a workflow",
+                "config": {
+                    "endpoint": {
+                        "url": "{{`http://${serviceParams.endpointUrlHost}/idit-web/api/workflow`}}",
+                        "method": "POST"
+                    },
+                    "targetPath": "result",
+                    "body": {
+                        "actionId": "{{taskId}}",
+                        "eventEntities": "{{intermediateData.taskEntities}}"
+                    },
+                    "headers": "{{serviceParams.httpHeaders}}"
+                },
+                "isChecked": true
+            },
+            {
+                "description": "format the final result",
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "result {'taskCreated': booleanValue}",
+                            "targetPath": "result"
+                        }
+                    ]
+                },
+                "isSelected": false,
+                "isChecked": true
+            },
+            {
+                "description": "delete input and inital data from the doc",
+                "stepType": "removedata",
+                "config": {
+                    "paths": [
+                        {
+                            "removePath": "taskId"
+                        },
+                        {
+                            "removePath": "intermediateData"
+                        },
+                        {
+                            "removePath": "entityId"
+                        },
+                        {
+                            "removePath": "serviceParams"
+                        }
+                    ]
+                },
+                "isSelected": false,
+                "isChecked": true
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "taskId": {
+                "type": "string"
+            },
+            "policyId": {
+                "type": "string"
+            }
+        },
+        "example": {
+            "taskId": "9055",
+            "policyId": "29870"
+        },
+        "default": {
+            "taskId": "9055",
+            "policyId": "29870"
+        }
+    },
+    "createDate": "2019-08-11T12:36:42.248Z",
+    "tag": null
+}

@@ -1,0 +1,465 @@
+{
+    "name": "iditUpdateContact",
+    "flow": {
+        "name": "iditUpdateContact",
+        "description": "A flow to update an IDIT contact. The input of the flow is an object of the contact details to update. The result of the flow is the contact Id of the updated contact. The flow contains 10 steps.",
+        "steps": [
+            {
+                "description": "map list type input fields",
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "identifiers ~> |$|{'idTypeRef': {'attributes': {'id': identifierTypeId}}},['identifierTypeId']| ~> |$|{'countryRef': {'attributes': {'id':countryId}}},['countryId']|",
+                            "targetPath": "intermediateContact.identifiersList"
+                        },
+                        {
+                            "jsonata": "affinityMemberships ~> |$|{'affinityVORef': {'attributes': {'id': affinityTypeId}}},['affinityTypeId']|",
+                            "targetPath": "intermediateContact.affinityMembershipsList"
+                        },
+                        {
+                            "jsonata": "addresses ~> |$|{'addressIVO': {'countryVORef': {'attributes': {'id': countryId}}, 'zipCode': postalCode, 'cityName': city, 'streetName': street, 'houseNr': streetNumber, 'apartmentNr': addressLine2}}, ['countryId', 'postalCode', 'city', 'street', 'streetNumber', 'addressLine2']| ~> |$|{'addressTypeVORef': {'attributes': {'id': addressTypeId}}, 'languageVORef': {'attributes': {'id': '101'}}}, ['addressTypeId']|",
+                            "targetPath": "intermediateContact.addressesList"
+                        },
+                        {
+                            "jsonata": "emails ~> |$|{'emailTypeVORef': {'attributes': {'id': emailTypeId}}}, ['emailTypeId']|",
+                            "targetPath": "intermediateContact.emailsList"
+                        },
+                        {
+                            "jsonata": "phoneNumbers ~> |$|{'telephoneTypeRef': {'attributes': {'id': telephoneTypeId}}, 'countryDialCodeRef': {'attributes': {'id': countryDialCodeId}}, 'telephonePrefixVORef': {'attributes': {'id': telephonePrefixId}}}, ['telephoneTypeId', 'countryDialCodeId', 'telephonePrefixId']|",
+                            "targetPath": "intermediateContact.phoneNumbersList"
+                        },
+                        {
+                            "jsonata": "bankAccounts ~> |$|{'paymentChanelVORef': {'attributes': {'id': '1'}}, 'bankExtNum': bankId, 'countryVORef': {'attributes': {'id': countryId}}, 'accountNr': accountNumber, 'ibanReference': ibanCode, 'bban': $substring(ibanCode, 4), 'checkDigits': $substring(ibanCode, 2, 2)}, ['countryId', 'bankId', 'accountNumber', 'ibanCode']|",
+                            "targetPath": "intermediateContact.bankAccounts"
+                        },
+                        {
+                            "jsonata": "creditCards ~> |$|{'paymentChanelVORef': {'attributes': {'id': '2'}}, 'bankExtNum': cardTypeId, 'countryVORef': {'attributes': {'id': countryId}}, 'accountNr': cardNumber, 'creditCardHolderName': holderName}, ['countryId', 'cardNumber', 'holderName', 'cardTypeId']|",
+                            "targetPath": "intermediateContact.creditCards"
+                        },
+                        {
+                            "jsonata": "$append(intermediateContact.bankAccounts, intermediateContact.creditCards)",
+                            "targetPath": "intermediateContact.bankAccounts"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "description": "call IDIT get contact service",
+                "stepType": "apiEnrich",
+                "stepArgs": "soapSlim",
+                "config": {
+                    "endpoint": {
+                        "url": "http://idit-ci:7014/idit-web/ws?methodName=GetContactByID&serviceName=IDITServices&wsdl"
+                    },
+                    "method": "IDITServicesGetContactByID.IDITServicesGetContactByIDInterface.IDITServicesGetContactByID",
+                    "targetPath": "result.contact",
+                    "soapRequest": {
+                        "interfaces-root:iDWrapperIVO.attributes.main": "true",
+                        "interfaces-root:iDWrapperIVO.identifier": "{{contactId}}"
+                    },
+                    "httpHeaders": {
+                        "userName": "{{$env.userName}}",
+                        "password": "{{$env.password}}"
+                    }
+                },
+                "isSelected": false
+            },
+            {
+                "description": "if preferredContactMethod should be updated then the preferredDeliveryAddressVO should be empty before mapping to it",
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "preferredContactMethod != null ? {}",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "description": "map simple input fields and map intermediate list type fields",
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "firstName",
+                            "targetPath": "result.contact.contactIVO.firstName"
+                        },
+                        {
+                            "jsonata": "name",
+                            "targetPath": "result.contact.contactIVO.name"
+                        },
+                        {
+                            "jsonata": "titleId",
+                            "targetPath": "result.contact.contactIVO.titleVORef.attributes.id"
+                        },
+                        {
+                            "jsonata": "genderId",
+                            "targetPath": "result.contact.contactIVO.genderVORef.attributes.id"
+                        },
+                        {
+                            "jsonata": "preferredContactMethodId",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryTypeRef.attributes.id"
+                        },
+                        {
+                            "jsonata": "dateOfBirth",
+                            "targetPath": "result.contact.contactIVO.dateOfBirth"
+                        },
+                        {
+                            "jsonata": "intermediateContact.addressesList",
+                            "targetPath": "result.contact.contactIVO.contactAddressList.contactAddress",
+                            "mergeArrayItems": {
+                                "mergeByKey": "addressTypeVORef.attributes.id",
+                                "excludeTargetItems": "discontinueDate"
+                            }
+                        },
+                        {
+                            "jsonata": "intermediateContact.phoneNumbersList",
+                            "targetPath": "result.contact.contactIVO.contactTelephoneList.contactTelephone",
+                            "mergeArrayItems": {
+                                "mergeByKey": "telephoneTypeRef.attributes.id",
+                                "excludeTargetItems": "discontinueDate"
+                            }
+                        },
+                        {
+                            "jsonata": "intermediateContact.emailsList",
+                            "targetPath": "result.contact.contactIVO.contactEmailList.contactEmail",
+                            "mergeArrayItems": {
+                                "mergeByKey": "emailTypeVORef.attributes.id",
+                                "excludeTargetItems": "discontinueDate"
+                            }
+                        },
+                        {
+                            "jsonata": "intermediateContact.identifiersList",
+                            "targetPath": "result.contact.contactIVO.contactIdentifierList.contactIdentifier",
+                            "mergeArrayItems": {
+                                "mergeByKey": "idTypeRef.attributes.id",
+                                "excludeTargetItems": "discontinueDate"
+                            }
+                        },
+                        {
+                            "jsonata": "intermediateContact.affinityMembershipsList",
+                            "targetPath": "result.contact.contactIVO.contactAffinityMembershipList.contactAffinityMembership",
+                            "mergeArrayItems": {
+                                "mergeByKey": "affinityVORef.attributes.id",
+                                "excludeTargetItems": "discontinueDate"
+                            }
+                        },
+                        {
+                            "jsonata": "intermediateContact.bankAccounts",
+                            "targetPath": "result.contact.contactIVO.contactBankAccountList.contactBankAccount",
+                            "append": "true"
+                        },
+                        {
+                            "jsonata": "preferredContactMethod.methodId",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryTypeRef.attributes.id"
+                        },
+                        {
+                            "jsonata": "preferredContactMethod.deliveryDetails.addressTypeId",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO.addressTypeVORef.attributes.id"
+                        },
+                        {
+                            "jsonata": "preferredContactMethod.deliveryDetails.postalCode",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO.addressIVO.zipCode"
+                        },
+                        {
+                            "jsonata": "preferredContactMethod.deliveryDetails.countryId",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO.addressIVO.countryVORef.attributes.id"
+                        },
+                        {
+                            "jsonata": "preferredContactMethod.deliveryDetails.street",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO.addressIVO.streetName"
+                        },
+                        {
+                            "jsonata": "preferredContactMethod.deliveryDetails.city",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO.addressIVO.cityName"
+                        },
+                        {
+                            "jsonata": "preferredContactMethod.deliveryDetails.streetNumber",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO.addressIVO.houseNr"
+                        },
+                        {
+                            "jsonata": "preferredContactMethod.deliveryDetails.addressLine2",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO.addressIVO.apartmentNr"
+                        },
+                        {
+                            "jsonata": "preferredContactMethod.deliveryDetails.emailTypeId",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO.emailTypeVORef.attributes.id"
+                        },
+                        {
+                            "jsonata": "preferredContactMethod.deliveryDetails.email",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO.email"
+                        },
+                        {
+                            "jsonata": "preferredContactMethod.deliveryDetails.telephoneTypeId",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO.telephoneTypeRef.attributes.id"
+                        },
+                        {
+                            "jsonata": "preferredContactMethod.deliveryDetails.telephoneNumber",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO.telephoneNumber"
+                        },
+                        {
+                            "jsonata": "preferredContactMethod.deliveryDetails.countryDialCodeId",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO.countryDialCodeRef.attributes.id"
+                        },
+                        {
+                            "jsonata": "preferredContactMethod.deliveryDetails.telephonePrefixId",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO.telephonePrefixVORef.attributes.id"
+                        },
+                        {
+                            "jsonata": "preferredContactMethod.deliveryDetails.telephonePrefix",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO.telephonePrefix"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "description": "call IDIT GetPresentationReference service to get preffered delivery types",
+                "stepType": "apiEnrich",
+                "stepArgs": "soapSlim",
+                "config": {
+                    "endpoint": {
+                        "url": "http://idit-ci:7014/idit-web/ws?serviceName=IDITServices&methodName=GetPresentationReference&wsdl"
+                    },
+                    "method": "IDITServicesGetPresentationReference.IDITServicesGetPresentationReferenceInterface.IDITServicesGetPresentationReference",
+                    "targetPath": "prefferedDeliveryTypes",
+                    "soapRequest": {
+                        "presentationReferenceWrapperIVO.attributes.main": "true",
+                        "presentationReferenceWrapperIVO.externalID": "507"
+                    },
+                    "httpHeaders": {
+                        "userName": "{{$env.userName}}",
+                        "password": "{{$env.password}}"
+                    }
+                },
+                "isSelected": false
+            },
+            {
+                "description": "get preffered delivery types and map it to contact preferred delivery object",
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "$map(prefferedDeliveryTypes.presentationReferencesIVO.presentationReferencesList.presentationReferences, function($v) {{'id': $v.pk, 'description' : $v.value, 'typeAndlang': ($types := [{'id': '2', 'type':'ContactAddressIVO', 'lang': '101'}, {'id': '4', 'type':'ContactAddressIVO', 'lang': '101'}, {'id': '5', 'type':'ContactAddressIVO', 'lang': '101'}, {'id': '1', 'type':'ContactTelephoneIVO'}, {'id': '10007', 'type':'ContactTelephoneIVO'}, {'id': '3', 'type':'ContactEmailIVO'}]; {'type': $types[id=$v.pk].type, 'lang': $types[id=$v.pk].lang})}})",
+                            "targetPath": "prefferedDeliveryTypes"
+                        },
+                        {
+                            "jsonata": "prefferedDeliveryTypes[id=$$.preferredContactMethod.methodId].typeAndlang.type",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO.attributes.type"
+                        },
+                        {
+                            "jsonata": "prefferedDeliveryTypes[id=$$.preferredContactMethod.methodId].typeAndlang.lang",
+                            "targetPath": "result.contact.contactIVO.preferredDeliveryAddressVO.languageVORef.attributes.id"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "decription": "delete preferredDeliveryAddressVO attributes to avoid duplication validation error",
+                "stepType": "removedata",
+                "config": {
+                    "paths": [
+                        {
+                            "removePath": "result.contact.contactIVO.preferredDeliveryAddressVO.attributes.id"
+                        },
+                        {
+                            "removePath": "result.contact.contactIVO.preferredDeliveryAddressVO.attributes.updateVersion"
+                        },
+                        {
+                            "removePath": "result.contact.contactIVO.preferredDeliveryAddressVO.addressIVO.attributes"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "decription": "call IDIT update contact service",
+                "stepType": "apiEnrich",
+                "stepArgs": "soapSlim",
+                "config": {
+                    "endpoint": {
+                        "url": "http://idit-ci:7014/idit-web/ws?serviceName=IDITServices&methodName=UpdateContact&wsdl"
+                    },
+                    "method": "IDITServicesUpdateContact.IDITServicesUpdateContactInterface.IDITServicesUpdateContact",
+                    "targetPath": "result.contactUpdated",
+                    "soapRequest": {
+                        "interfaces-root:contactIVO": "{{result.contact.contactIVO}}"
+                    },
+                    "httpHeaders": {
+                        "userName": "{{$env.userName}}",
+                        "password": "{{$env.password}}"
+                    }
+                },
+                "isSelected": false
+            },
+            {
+                "description": "format the final service result",
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "result.contactUpdated.iDWrapperIVO[0] {'contactId': identifier}",
+                            "targetPath": "result"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "decription": "delete intermediate data, input data and the original result from the doc",
+                "stepType": "removedata",
+                "config": {
+                    "paths": [
+                        {
+                            "removePath": "intermediateContact"
+                        },
+                        {
+                            "removePath": "prefferedDeliveryTypes"
+                        },
+                        {
+                            "removePath": "result.contact"
+                        },
+                        {
+                            "removePath": "result.contactUpdated"
+                        }
+                    ]
+                },
+                "isSelected": true
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "contactId": {
+                "type": "string"
+            },
+            "titleId": {
+                "type": "string"
+            },
+            "addresses": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "postalCode": {
+                            "type": "string"
+                        },
+                        "countryId": {
+                            "type": "string"
+                        },
+                        "street": {
+                            "type": "string"
+                        },
+                        "city": {
+                            "type": "string"
+                        },
+                        "streetNumber": {
+                            "type": "string"
+                        },
+                        "addressLine2": {
+                            "type": "string"
+                        },
+                        "addressTypeId": {
+                            "type": "string"
+                        }
+                    },
+                    "example": {
+                        "postalCode": "555555",
+                        "countryId": "148",
+                        "street": "5th ave",
+                        "city": "New York",
+                        "streetNumber": "113",
+                        "addressLine2": "apt. 6B",
+                        "addressTypeId": "3"
+                    },
+                    "default": {
+                        "postalCode": "555555",
+                        "countryId": "148",
+                        "street": "5th ave",
+                        "city": "New York",
+                        "streetNumber": "113",
+                        "addressLine2": "apt. 6B",
+                        "addressTypeId": "3"
+                    }
+                }
+            },
+            "emails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "emailTypeId": {
+                            "type": "string"
+                        },
+                        "email": {
+                            "type": "string"
+                        }
+                    },
+                    "example": {
+                        "emailTypeId": "2",
+                        "email": "mail@mail.com"
+                    },
+                    "default": {
+                        "emailTypeId": "2",
+                        "email": "mail@mail.com"
+                    }
+                }
+            }
+        },
+        "example": {
+            "contactId": "404910",
+            "titleId": "2",
+            "addresses": [
+                {
+                    "postalCode": "555555",
+                    "countryId": "148",
+                    "street": "5th ave",
+                    "city": "New York",
+                    "streetNumber": "113",
+                    "addressLine2": "apt. 6B",
+                    "addressTypeId": "3"
+                }
+            ],
+            "emails": [
+                {
+                    "emailTypeId": "2",
+                    "email": "mail@mail.com"
+                }
+            ]
+        },
+        "default": {
+            "contactId": "404910",
+            "titleId": "2",
+            "addresses": [
+                {
+                    "postalCode": "555555",
+                    "countryId": "148",
+                    "street": "5th ave",
+                    "city": "New York",
+                    "streetNumber": "113",
+                    "addressLine2": "apt. 6B",
+                    "addressTypeId": "3"
+                }
+            ],
+            "emails": [
+                {
+                    "emailTypeId": "2",
+                    "email": "mail@mail.com"
+                }
+            ]
+        }
+    },
+    "createDate": "2019-08-11T12:36:42.960Z",
+    "tag": null
+}

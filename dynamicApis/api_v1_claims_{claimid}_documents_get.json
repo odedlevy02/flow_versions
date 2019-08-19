@@ -1,0 +1,17 @@
+{
+    "path": "/api/v1/claims/{claimId}/documents",
+    "verb": "GET",
+    "flow": "iditGetClaimDocuments",
+    "tag": "Claim",
+    "summary": "Get claim documents",
+    "responseDescription": "List of documents",
+    "dataModel": [],
+    "responseSchema": {
+        "listDocuments": {
+            "documentName": "COPR-14693 PR Form.doc",
+            "documentType": {},
+            "documentReceiptDate": "2014-07-16T13:21:33",
+            "documentURL": ""
+        }
+    }
+}

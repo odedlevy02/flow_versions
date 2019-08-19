@@ -1,0 +1,27 @@
+{
+    "path": "/api/v1/contacts/{contactId}/quotes",
+    "verb": "GET",
+    "flow": "iditGetContactQoutes",
+    "tag": "Contact",
+    "summary": "Get contact list of quotes",
+    "responseDescription": "List of quotes",
+    "dataModel": [],
+    "responseSchema": {
+        "listQuotes": [
+            {
+                "product": {
+                    "id": "26246",
+                    "description": "Family"
+                },
+                "effectiveDate": "2013-09-10T00:00:00",
+                "endDate": "2014-09-09T00:00:00",
+                "policyHolderName": "John Smith",
+                "quoteValidityDate": "2013-09-30T00:00:00",
+                "status": {
+                    "id": "11",
+                    "description": "Partial save"
+                }
+            }
+        ]
+    }
+}

@@ -6,7 +6,6 @@
                 "stepType": "dateenrich",
                 "config": {
                     "maps": [
-                      
                         {
                             "sourcePath": "renewDate",
                             "format": "YYYY-MM-DDT00:00:00",
@@ -277,5 +276,6 @@
             }
         }
     },
-    "createDate": "2019-07-01T11:05:42.570Z"
-}someContentsomeContent
+    "createDate": "2019-08-07T11:14:41.580Z",
+    "tag": null
+}

@@ -1,0 +1,15 @@
+{
+    "path": "/api/v1/policies/",
+    "verb": "POST",
+    "flow": "iditIssuePolicy",
+    "tag": "Policy",
+    "summary": "Create new policy from an existing proposal",
+    "responseDescription": "Policy number and status",
+    "dataModel": {
+        "proposalExtNumber": "PR-5000000401836/00"
+    },
+    "responseSchema": {
+        "policyNumber": "PL-5000000401834/00",
+        "status": "Policy"
+    }
+}

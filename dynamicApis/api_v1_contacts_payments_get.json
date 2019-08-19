@@ -1,0 +1,31 @@
+{
+    "path": "/api/v1/contacts/payments",
+    "verb": "GET",
+    "flow": "iditGetContactPaymentOverview",
+    "tag": "Contact",
+    "summary": "Get contact payments overview",
+    "responseDescription": "A list of contact payments",
+    "dataModel": [
+        {
+            "in": "query",
+            "name": "contactExternalNumber",
+            "description": "Contact External Number"
+        },
+        {
+            "in": "query",
+            "name": "brandCompanyExternalNumber",
+            "description": "Brand Company External Number"
+        }
+    ],
+    "responseSchema": [
+        {
+            "paymentAmount": "1.38",
+            "paymentDueDate": "2019-05-13T00:00:00",
+            "policyNumber": "PL-5000000399477/00",
+            "collectionMethod": {
+                "id": 1,
+                "description": "Cash"
+            }
+        }
+    ]
+}

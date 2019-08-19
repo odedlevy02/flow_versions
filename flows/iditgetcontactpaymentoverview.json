@@ -1,0 +1,110 @@
+{
+    "name": "iditGetContactPaymentOverview",
+    "flow": {
+        "name": "iditGetContactPaymentOverview",
+        "description": "A flow to get contact payment overview. The input is contact external number and brand company external number. If the contact has only one brand company then the brand company external number can be omitted from the input parameters. The output is a list of payments.",
+        "steps": [
+            {
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "description": "map the input fields",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "brandCompanyExternalNumber",
+                            "targetPath": "queryParams.bcContactExtCode"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "stepType": "mapEnrich",
+                "description": "map user and pass http headers",
+                "config": {
+                    "maps": [
+                        {
+                            "targetPath": "httpHeaders.userName",
+                            "value": "{{$env.userName}}"
+                        },
+                        {
+                            "targetPath": "httpHeaders.password",
+                            "value": "{{$env.password}}"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "stepType": "apiEnrich",
+                "stepArgs": "restSlim",
+                "description": "A call to IDIT getPaymentOverview service",
+                "config": {
+                    "endpoint": {
+                        "url": "{{`http://idit-ci:7014/idit-web/api/contact/${contactExternalNumber}/paymentOverview`}}"
+                    },
+                    "targetPath": "result",
+                    "queryParams": "{{queryParams}}",
+                    "headers": "{{httpHeaders}}"
+                },
+                "isSelected": true
+            },
+            {
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "description": "format the final result",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "$map(result.installmentIVO, function($v,$i){{'paymentAmount': $v.installmentFeeAmountVO.amount, 'paymentDueDate': $v.dueDate, 'policyNumber': $v.policyExtNum, 'collectionMethod': {'id': $v.collectionMethodVO.id, 'description': $v.collectionMethodVO.desc }}})",
+                            "targetPath": "result"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "stepType": "removeData",
+                "description": "delete initial and intermediate data",
+                "config": {
+                    "paths": [
+                        {
+                            "removePath": "queryParams"
+                        },
+                        {
+                            "removePath": "httpHeaders"
+                        },
+                        {
+                            "removePath": "brandCompanyExternalNumber"
+                        },
+                        {
+                            "removePath": "contactExternalNumber"
+                        }
+                    ]
+                },
+                "isSelected": false
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "contactExternalNumber": {
+                "type": "string"
+            },
+            "brandCompanyExternalNumber": {
+                "type": "string"
+            }
+        },
+        "example": {
+            "contactExternalNumber": "404691",
+            "brandCompanyExternalNumber": "ME"
+        },
+        "default": {
+            "contactExternalNumber": "404691",
+            "brandCompanyExternalNumber": "ME"
+        }
+    },
+    "createDate": "2019-08-11T12:36:42.494Z",
+    "tag": null
+}

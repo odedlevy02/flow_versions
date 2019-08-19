@@ -1,0 +1,7 @@
+{
+    "path": "/test1",
+    "verb": "GET",
+    "flow": "CalcPremAndCreatePolicy",
+    "tag": "Flows",
+    "dataModel": []
+}

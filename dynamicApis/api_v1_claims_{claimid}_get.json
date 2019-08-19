@@ -1,0 +1,26 @@
+{
+    "path": "/api/v1/claims/{claimId}",
+    "verb": "GET",
+    "flow": "iditGetClaimOverview",
+    "tag": "Claim",
+    "summary": "Get claim details",
+    "responseDescription": "Claim details",
+    "dataModel": [],
+    "responseSchema": {
+        "claimsOverview": {
+            "eventDate": "13/06/2018",
+            "policyNumber": "PL-5000000384197/01",
+            "claimCause": "Fire",
+            "claimStatus": {
+                "id": "2",
+                "description": "Closed"
+            },
+            "serviceProviersInvolved": [
+                "32302",
+                "30324",
+                "90007",
+                "31318"
+            ]
+        }
+    }
+}

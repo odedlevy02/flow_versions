@@ -1,0 +1,11 @@
+{
+    "path": "/api/v1/claims/{claimId}/tasks/{taskId}",
+    "verb": "POST",
+    "flow": "iditCreateTaskForClaim",
+    "tag": "Claim",
+    "summary": "Create task for claim",
+    "responseDescription": "Success indicator",
+    "responseSchema": {
+        "taskCreated": true
+    }
+}

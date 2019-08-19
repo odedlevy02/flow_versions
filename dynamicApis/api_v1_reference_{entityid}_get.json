@@ -1,0 +1,49 @@
+{
+    "path": "/api/v1/reference/{entityId}",
+    "verb": "GET",
+    "flow": "iditGetPresentationReferences",
+    "tag": "Other",
+    "summary": "Get presentation references",
+    "responseDescription": "List of presentation references",
+    "dataModel": [],
+    "responseSchema": {
+        "presentationReferencesIVO": {
+            "attributes": {
+                "id": "-824591461",
+                "main": "true"
+            },
+            "presentationReferencesList": {
+                "presentationReferences": [
+                    {
+                        "attributes": {
+                            "id": "-334001382"
+                        },
+                        "pk": "1",
+                        "value": "Belgium"
+                    },
+                    {
+                        "attributes": {
+                            "id": "-342359730"
+                        },
+                        "pk": "2",
+                        "value": "Albania"
+                    },
+                    {
+                        "attributes": {
+                            "id": "-851459064"
+                        },
+                        "pk": "3",
+                        "value": "Algeria"
+                    },
+                    {
+                        "attributes": {
+                            "id": "-910852777"
+                        },
+                        "pk": "4",
+                        "value": "American Samoa"
+                    }
+                ]
+            }
+        }
+    }
+}

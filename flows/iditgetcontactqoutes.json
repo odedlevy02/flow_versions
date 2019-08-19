@@ -1,0 +1,73 @@
+{
+    "name": "iditGetContactQoutes",
+    "flow": {
+        "name": "iditGetContactQoutes",
+        "description": "A flow to get a list of quotes for a contact",
+        "steps": [
+            {
+                "stepType": "mapEnrich",
+                "condition": "{{contactId != ''}}",
+                "config": {
+                    "maps": [
+                        {
+                            "value": 6,
+                            "targetPath": "role"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "stepType": "apiEnrich",
+                "stepArgs": "soapSlim",
+                "config": {
+                    "endpoint": {
+                        "url": "http://idit-ci:7014/idit-web/ws?methodName=search&serviceName=IDITServices&wsdl"
+                    },
+                    "method": "IDITServicessearch.IDITServicessearchInterface.IDITServicessearch",
+                    "targetPath": "result.listQuotes",
+                    "soapRequest": {
+                        "searchIVO.attributes.main": "true",
+                        "searchIVO.finderKey": "3",
+                        "searchIVO.contactId": "{{contactId}}",
+                        "searchIVO.policyContactRole": "{{role}}"
+                    },
+                    "httpHeaders": {
+                        "userName": "{{$env.userName}}",
+                        "password": "{{$env.password}}"
+                    }
+                },
+                "isSelected": false
+            },
+            {
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "$map(result.listQuotes.multiEntityContainerIVO.proposalInListIVOList.proposalInListIVO,function($v,$i){ { 'product': { 'id': $v.productId, 'description' : $v.productVORef.'$value' }, 'policyNumber' : $v.policyNr, 'effectiveDate' : $v.policyStartDate, 'endDate': $v.endDate, 'policyHolderName': $v.policyOwnerName, 'quoteValidityDate':$v.validUntil,'status':{ 'id':$v.statusCodeVORef.attributes.id, 'description': $v.statusCodeVORef.'$value' } } })",
+                            "targetPath": "result.listQuotes"
+                        }
+                    ]
+                },
+                "isSelected": true
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "contactId": {
+                "type": "string"
+            }
+        },
+        "example": {
+            "contactId": "28898"
+        },
+        "default": {
+            "contactId": "28898"
+        }
+    },
+    "createDate": "2019-08-11T12:36:42.529Z",
+    "tag": null
+}

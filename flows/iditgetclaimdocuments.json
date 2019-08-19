@@ -1,0 +1,59 @@
+{
+    "name": "iditGetClaimDocuments",
+    "flow": {
+        "name": "iditGetClaimDocuments",
+        "description": "",
+        "steps": [
+            {
+                "stepType": "apiEnrich",
+                "stepArgs": "soapSlim",
+                "config": {
+                    "endpoint": {
+                        "url": "http://idit-ci:7014/idit-web/ws?methodName=getEntityDocuments&serviceName=IDITServices&wsdl"
+                    },
+                    "method": "IDITServicesgetEntityDocuments.IDITServicesgetEntityDocumentsInterface.IDITServicesgetEntityDocuments",
+                    "targetPath": "result.listDocuments",
+                    "soapRequest": {
+                        "searchEntityDocumentsRequestIVO.attributes.main": "true",
+                        "searchEntityDocumentsRequestIVO.entityNumber": "407",
+                        "searchEntityDocumentsRequestIVO.entityID": "{{claimId}}"
+                    },
+                    "httpHeaders": {
+                        "userName": "{{$env.userName}}",
+                        "password": "{{$env.password}}"
+                    }
+                },
+                "isSelected": true
+            },
+            {
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "$map(result.listDocuments.searchEntityDocumentsResponseIVO.entityDocumentsList.entityDocuments,function($v,$i){ {'documentName':$v.documentName, 'documentType': { 'id': $v.documentTypeRef.attributes.id, 'description': $v.documentTypeRef.'$value' }, 'documentReceiptDate': $v.documentCreationDate, 'documentURL': '' }})",
+                            "targetPath": "result.listDocuments"
+                        }
+                    ]
+                },
+                "isSelected": false
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "claimId": {
+                "type": "string"
+            }
+        },
+        "example": {
+            "claimId": "28745"
+        },
+        "default": {
+            "claimId": "28745"
+        }
+    },
+    "createDate": "2019-08-11T12:36:42.290Z",
+    "tag": null
+}

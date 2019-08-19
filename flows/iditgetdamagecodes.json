@@ -1,0 +1,117 @@
+{
+    "name": "iditGetDamageCodes",
+    "flow": {
+        "name": "iditGetDamageCodes",
+        "description": "Get damage codes by providing three parameters: object type (refer ID column of T_ASSET_TYPE table), claimant side (refer ID column of T_CLAIMANT_SIDE table) and cause of loss (refer ID column of T_CLAIM_CAUSE_OF_LOSS table)",
+        "steps": [
+            {
+                "description": "Map user provided data to a temporary query params object. Providing causeOfLoss is not mandatory.",
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "objectType",
+                            "targetPath": "queryParams.objectType"
+                        },
+                        {
+                            "jsonata": "claimantSide",
+                            "targetPath": "queryParams.claimantSide"
+                        },
+                        {
+                            "jsonata": "causeOfLoss",
+                            "targetPath": "queryParams.causeOfLoss"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "stepType": "mapEnrich",
+                "description": "Map username and password to HTTP Headers",
+                "config": {
+                    "maps": [
+                        {
+                            "targetPath": "httpHeaders.userName",
+                            "value": "{{$env.userName}}"
+                        },
+                        {
+                            "targetPath": "httpHeaders.password",
+                            "value": "{{$env.password}}"
+                        }
+                    ]
+                },
+                "isSelected": true
+            },
+            {
+                "description": "Invoke IDIT webservice to get damage codes",
+                "stepType": "apiEnrich",
+                "stepArgs": "restSlim",
+                "config": {
+                    "endpoint": {
+                        "url": "http://idit-ci:7014/idit-web/api/productServices/damageCodes"
+                    },
+                    "targetPath": "result.damageCodes",
+                    "queryParams": "{{queryParams}}",
+                    "headers": "{{httpHeaders}}"
+                },
+                "isSelected": false
+            },
+            {
+                "description": "Prettify the result",
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "result.damageCodes.presentationReferences[].{'id':id, 'value': value}",
+                            "targetPath": "result.damageCodes"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "description": "Remove unrequired data",
+                "stepType": "removedata",
+                "config": {
+                    "paths": [
+                        {
+                            "removePath": "queryParams"
+                        },
+                        {
+                            "removePath": "httpHeaders"
+                        }
+                    ]
+                },
+                "isSelected": false
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "objectType": {
+                "type": "integer"
+            },
+            "claimantSide": {
+                "type": "integer"
+            },
+            "causeOfLoss": {
+                "type": "integer"
+            }
+        },
+        "example": {
+            "objectType": 1,
+            "claimantSide": 1,
+            "causeOfLoss": 1
+        },
+        "default": {
+            "objectType": 1,
+            "claimantSide": 1,
+            "causeOfLoss": 1
+        }
+    },
+    "createDate": "2019-08-11T12:36:42.575Z",
+    "tag": null
+}

@@ -1,0 +1,32 @@
+{
+    "path": "/api/v1/contacts",
+    "verb": "PUT",
+    "flow": "iditUpdateContact",
+    "tag": "Contact",
+    "summary": "Update contact",
+    "responseDescription": "Updated contact Id",
+    "dataModel": {
+        "contactId": "404914",
+        "titleId": "2",
+        "addresses": [
+            {
+                "postalCode": "555555",
+                "countryId": "148",
+                "street": "5th ave",
+                "city": "New York",
+                "streetNumber": "113",
+                "addressLine2": "apt. 6B",
+                "addressTypeId": "3"
+            }
+        ],
+        "emails": [
+            {
+                "emailTypeId": "2",
+                "email": "mail@mail.com"
+            }
+        ]
+    },
+    "responseSchema": {
+        "contactId": "29424"
+    }
+}

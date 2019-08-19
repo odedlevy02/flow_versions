@@ -1,0 +1,16 @@
+{
+    "path": "/api/v1/policies/{policyId}/payments",
+    "verb": "PUT",
+    "flow": "iditUpdatePaymentMethod",
+    "tag": "Policy",
+    "summary": "Update policy payment method",
+    "responseDescription": "Policy number and status",
+    "dataModel": {
+        "collectionMethodId": "1",
+        "frequencyId": "7"
+    },
+    "responseSchema": {
+        "policyNumber": "PL-1000000400934/51",
+        "status": "Policy"
+    }
+}

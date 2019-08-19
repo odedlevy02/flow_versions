@@ -1,0 +1,84 @@
+{
+    "path": "/api/v1/contacts",
+    "verb": "GET",
+    "flow": "iditGetContact",
+    "tag": "Contact",
+    "summary": "Get contact details",
+    "responseDescription": "Contact details",
+    "dataModel": [
+        {
+            "in": "query",
+            "name": "id",
+            "description": "Contact Id"
+        }
+    ],
+    "responseSchema": {
+        "firstName": "Jhon",
+        "lastName": "Smith",
+        "title": "2",
+        "gender": "1",
+        "bankAccounts": {
+            "country": {
+                "id": "20",
+                "description": "Afghanistan"
+            },
+            "bankAccountExternalNumber": "32612",
+            "bankName": "afBank",
+            "accountNumberLastDigits": "*****6789"
+        },
+        "addresses": [
+            {
+                "city": "New York",
+                "street": "5th ave",
+                "house": "113",
+                "addressLine2": "apt. 6B",
+                "country": {
+                    "id": "148",
+                    "description": "New Zealand"
+                },
+                "postalCode": "555555",
+                "addressType": {
+                    "id": "3",
+                    "description": "Billing address"
+                }
+            }
+        ],
+        "telephoneNumbers": {
+            "telephoneNumber": "14841112",
+            "countryDialCode": {
+                "id": "1",
+                "description": "32"
+            },
+            "telephonePrefix": "012",
+            "telephoneType": {
+                "id": "2",
+                "description": "Work telephone"
+            }
+        },
+        "emails": {
+            "email": "mail2@mail.com",
+            "emailType": {
+                "id": "2",
+                "description": "Work"
+            }
+        },
+        "preferredContactMethod": {
+            "id": "2",
+            "description": "Regular mail"
+        },
+        "preferredContactMethodDetails": {
+            "city": "Afghan",
+            "street": "Afstreet",
+            "house": "123",
+            "country": {
+                "id": "20",
+                "description": "Afghanistan"
+            },
+            "postalCode": "123123",
+            "addressType": {
+                "id": "6",
+                "description": "Registered office"
+            }
+        }
+    }
+}

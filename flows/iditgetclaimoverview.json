@@ -1,0 +1,91 @@
+{
+    "name": "iditGetClaimOverview",
+    "flow": {
+        "name": "iditGetClaimOverview",
+        "description": "",
+        "steps": [
+            {
+                "stepType": "apiEnrich",
+                "stepArgs": "soapSlim",
+                "config": {
+                    "endpoint": {
+                        "url": "http://idit-ci:7014/idit-web/ws?serviceName=IDITServices&methodName=GetClaimByExternalId&wsdl"
+                    },
+                    "method": "IDITServicesGetClaimByExternalId.IDITServicesGetClaimByExternalIdInterface.IDITServicesGetClaimByExternalId",
+                    "targetPath": "result.claimsOverview",
+                    "soapRequest": {
+                        "iDWrapperIVO.attributes.main": "true",
+                        "iDWrapperIVO.externalID": "{{claimId}}"
+                    },
+                    "httpHeaders": {
+                        "userName": "{{$env.userName}}",
+                        "password": "{{$env.password}}"
+                    }
+                },
+                "isSelected": false
+            },
+            {
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "[$filter(result.claimsOverview.claimIVO.relatedClaimContactIVOsList.relatedClaimContactIVOs.claimantIVO.claimantAssetIVoList.claimantAssetIVo.relatedClaimContactIVOsList.relatedClaimContactIVOs, function($v, $i, $a) { $v.claimContactRoleVORef.attributes.id='5' }).contactExtNumber]",
+                            "targetPath": "result.serviceProviders1"
+                        },
+                        {
+                            "jsonata": "[$filter(result.claimsOverview.claimIVO.relatedClaimContactIVOsList.relatedClaimContactIVOs.claimantIVO.relatedClaimContactIVOsList.relatedClaimContactIVOs, function($v, $i, $a) { $v.claimContactRoleVORef.attributes.id='5' }).contactExtNumber]",
+                            "targetPath": "result.serviceProviders2"
+                        },
+                        {
+                            "jsonata": "[$filter(result.claimsOverview.claimIVO.relatedClaimContactIVOsList.relatedClaimContactIVOs, function($v, $i, $a) { $v.claimContactRoleVORef.attributes.id='5' }).contactExtNumber]",
+                            "targetPath": "result.serviceProviders3"
+                        },
+                        {
+                            "jsonata": "result.claimsOverview.claimIVO {'eventDate': $fromMillis($toMillis(claimEventDate), '[D01]/[M01]/[Y0001]'), 'policyNumber': claimPolicyIvoList[0].claimPolicyIvo.policyExternalNumber, 'claimCause' : claimCauseOfLossVORef.'$value', 'claimStatus': {'id': claimStatusTypeVORef.attributes.id, 'description': claimStatusTypeVORef.'$value'}} ",
+                            "targetPath": "result.claimsOverview"
+                        },
+                        {
+                            "jsonata": "$append(result.serviceProviders1, $append(result.serviceProviders2, result.serviceProviders3))",
+                            "targetPath": "result.claimsOverview.serviceProviersInvolved"
+                        }
+                    ]
+                },
+                "isSelected": true
+            },
+            {
+                "stepType": "removedata",
+                "config": {
+                    "paths": [
+                        {
+                            "removePath": "result.serviceProviders1"
+                        },
+                        {
+                            "removePath": "result.serviceProviders2"
+                        },
+                        {
+                            "removePath": "result.serviceProviders3"
+                        }
+                    ]
+                },
+                "isSelected": false
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "claimId": {
+                "type": "string"
+            }
+        },
+        "example": {
+            "claimId": "280123"
+        },
+        "default": {
+            "claimId": "280123"
+        }
+    },
+    "createDate": "2019-08-11T12:36:42.346Z",
+    "tag": null
+}

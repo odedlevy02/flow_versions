@@ -1,0 +1,182 @@
+{
+    "name": "iditIssuePolicy",
+    "flow": {
+        "name": "iditIssuePolicy",
+        "description": "A flow to issue a policy from proposal. The input of the flow is the policy external number and a bank account external number if needed. The flow contains 6 steps",
+        "steps": [
+            {
+                "description": "map flow initial params",
+                "stepType": "mapEnrich",
+                "config": {
+                    "maps": [
+                        {
+                            "value": "idit-ci:7014",
+                            "targetPath": "flowParams.endpointUrlHost"
+                        },
+                        {
+                            "value": "IDITServices",
+                            "targetPath": "flowParams.serviceName"
+                        },
+                        {
+                            "value": {
+                                "userName": "{{$env.userName}}",
+                                "password": "{{$env.password}}"
+                            },
+                            "targetPath": "flowParams.httpHeaders"
+                        },
+                        {
+                            "value": "20",
+                            "targetPath": "flowParams.policyStatusCode"
+                        },
+                        {
+                            "value": "true",
+                            "targetPath": "flowParams.ivoMainAttribute"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "description": "call IDIT service to get proposal",
+                "stepType": "apiEnrich",
+                "stepArgs": "soapSlim",
+                "config": {
+                    "endpoint": {
+                        "url": "{{`http://${flowParams.endpointUrlHost}/idit-web/ws?serviceName=${flowParams.serviceName}&methodName=GetReproducedProposalByProposalExtNumberForUpdate&wsdl`}}"
+                    },
+                    "method": "{{`${flowParams.serviceName}GetReproducedProposalByProposalExtNumberForUpdate.${flowParams.serviceName}GetReproducedProposalByProposalExtNumberForUpdateInterface.${flowParams.serviceName}GetReproducedProposalByProposalExtNumberForUpdate`}}",
+                    "targetPath": "reproducedProposal.body",
+                    "soapRequest": {
+                        "interfaces-root:iDWrapperIVO.externalID": "{{proposalExtNumber}}",
+                        "interfaces-root:iDWrapperIVO.attributes.main": "{{flowParams.ivoMainAttribute}}"
+                    },
+                    "httpHeaders": "{{flowParams.httpHeaders}}",
+                    "headerTargetPath": "reproducedProposal.header"
+                },
+                "isSelected": false
+            },
+            {
+                "description": "map the policyHeaderIVO object for issue policy",
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "flowParams.ivoMainAttribute",
+                            "targetPath": "policyHeaderIVO.attributes.main"
+                        },
+                        {
+                            "jsonata": "reproducedProposal.body.policyHeaderIVO.attributes.id",
+                            "targetPath": "policyHeaderIVO.attributes.id"
+                        },
+                        {
+                            "jsonata": "reproducedProposal.body.policyHeaderIVO.attributes.updateVersion",
+                            "targetPath": "policyHeaderIVO.attributes.updateVersion"
+                        },
+                        {
+                            "jsonata": "reproducedProposal.body.policyHeaderIVO.policyIVOsList.policyIVOs.attributes.id",
+                            "targetPath": "policyHeaderIVO.policyIVOsList.policyIVOs.attributes.id"
+                        },
+                        {
+                            "jsonata": "reproducedProposal.body.policyHeaderIVO.policyIVOsList.policyIVOs.attributes.updateVersion",
+                            "targetPath": "policyHeaderIVO.policyIVOsList.policyIVOs.attributes.updateVersion"
+                        },
+                        {
+                            "jsonata": "flowParams.policyStatusCode",
+                            "targetPath": "policyHeaderIVO.statusCodeVORef.attributes.id"
+                        },
+                        {
+                            "jsonata": "flowParams.policyStatusCode",
+                            "targetPath": "policyHeaderIVO.policyIVOsList.policyIVOs.statusCodeVORef.attributes.id"
+                        },
+                        {
+                            "jsonata": "bankAccountExtNumber",
+                            "targetPath": "policyHeaderIVO.policyIVOsList.policyIVOs.policyBankAccountExternalNumber"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "description": "call IDIT issue policy service",
+                "stepType": "apiEnrich",
+                "stepArgs": "soapSlim",
+                "config": {
+                    "endpoint": {
+                        "url": "{{`http://${flowParams.endpointUrlHost}/idit-web/ws?serviceName=${flowParams.serviceName}&methodName=IssuePolicy&wsdl`}}"
+                    },
+                    "method": "{{`${flowParams.serviceName}IssuePolicy.${flowParams.serviceName}IssuePolicyInterface.${flowParams.serviceName}IssuePolicy`}}",
+                    "targetPath": "result",
+                    "soapRequest": {
+                        "policyHeaderIVO": "{{policyHeaderIVO}}"
+                    },
+                    "soapHeaders": [
+                        {
+                            "interfaces-root:basicSoapHeaderIVOinList": {
+                                "interfaces-root:basicSoapHeaderIVO": {
+                                    "attributes": {
+                                        "main": true
+                                    },
+                                    "messageCorrelationId": "{{reproducedProposal.header[0]['interfaces-root:basicSoapHeaderIVOoutList'][0]['interfaces-root:basicSoapHeaderIVO'][0].messageCorrelationId[0]}}"
+                                }
+                            }
+                        }
+                    ],
+                    "httpHeaders": "{{flowParams.httpHeaders}}"
+                },
+                "isSelected": false
+            },
+            {
+                "description": "format the final result",
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "result.extendedIDWrapperIVO {'policyNumber': externalID, 'status': statusIVO.status}",
+                            "targetPath": "result"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "description": "delete input and inital data from the doc",
+                "stepType": "removedata",
+                "config": {
+                    "paths": [
+                        {
+                            "removePath": "proposalExtNumber"
+                        },
+                        {
+                            "removePath": "reproducedProposal"
+                        },
+                        {
+                            "removePath": "policyHeaderIVO"
+                        },
+                        {
+                            "removePath": "flowParams"
+                        }
+                    ]
+                },
+                "isSelected": true
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "proposalExtNumber": {
+                "type": "string"
+            }
+        },
+        "example": {
+            "proposalExtNumber": "PR-5000000401834/00"
+        },
+        "default": {
+            "proposalExtNumber": "PR-5000000401834/00"
+        }
+    },
+    "createDate": "2019-08-11T12:36:42.902Z",
+    "tag": null
+}

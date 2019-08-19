@@ -1,0 +1,37 @@
+{
+    "path": "/api/v1/damageCodes",
+    "verb": "GET",
+    "flow": "iditGetDamageCodes",
+    "tag": "Other",
+    "summary": "Get damage codes",
+    "responseDescription": "List of damage codes",
+    "dataModel": [
+        {
+            "in": "query",
+            "name": "objectType",
+            "description": "Asset type external code"
+        },
+        {
+            "in": "query",
+            "name": "claimantSide",
+            "description": "Claimant external code"
+        },
+        {
+            "in": "query",
+            "name": "causeOfLoss",
+            "description": "Cause of claim external code"
+        }
+    ],
+    "responseSchema": {
+        "damageCodes": [
+            {
+                "id": 5000014,
+                "value": "Extra Material Damage"
+            },
+            {
+                "id": 10098,
+                "value": "Legal Defense 1"
+            }
+        ]
+    }
+}

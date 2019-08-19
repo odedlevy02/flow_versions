@@ -1,0 +1,84 @@
+{
+    "name": "iditGetModelsByMake",
+    "flow": {
+        "name": "iditGetModelsByMake",
+        "description": "Get list of model by make (For manufactureExtCode refer EXTERNAL_CODE column in T_MANUFACTURE table in IDIT)",
+        "steps": [
+            {
+                "stepType": "mapEnrich",
+                "description": "Map username and password to HTTP Headers",
+                "config": {
+                    "maps": [
+                        {
+                            "targetPath": "httpHeaders.userName",
+                            "value": "{{$env.userName}}"
+                        },
+                        {
+                            "targetPath": "httpHeaders.password",
+                            "value": "{{$env.password}}"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "description": "Invoke IDIT webservice to get list of models by make",
+                "stepType": "apiEnrich",
+                "stepArgs": "restSlim",
+                "config": {
+                    "endpoint": {
+                        "url": "http://idit-ci:7014/idit-web/api/productServices/modelsByManufacture"
+                    },
+                    "targetPath": "result.models",
+                    "queryParams": {
+                        "manufactureExtCode": "{{manufactureExtCode}}"
+                    },
+                    "headers": "{{httpHeaders}}"
+                },
+                "isSelected": true
+            },
+            {
+                "description": "Prettify the result",
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "result.models.presentationReferences[].{'modelId':id,'modelName':value,'modelProperties':fields[].{'property':fieldName,'value':fieldValue}}",
+                            "targetPath": "result.models"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "description": "Remove unrequired data",
+                "stepType": "removedata",
+                "config": {
+                    "paths": [
+                        {
+                            "removePath": "httpHeaders"
+                        }
+                    ]
+                },
+                "isSelected": false
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "manufactureExtCode": {
+                "type": "integer"
+            }
+        },
+        "example": {
+            "manufactureExtCode": 9130
+        },
+        "default": {
+            "manufactureExtCode": 9130
+        }
+    },
+    "createDate": "2019-08-11T12:36:42.722Z",
+    "tag": null
+}

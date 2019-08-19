@@ -1,0 +1,20 @@
+{
+    "path": "/api/v1/policies/{policyId}/documents",
+    "verb": "GET",
+    "flow": "iditGetPolicyDocuments",
+    "tag": "Policy",
+    "summary": "Get policy documents",
+    "responseDescription": "List of documents",
+    "dataModel": [],
+    "responseSchema": {
+        "listDocuments": {
+            "searchEntityDocumentsResponseIVO": {
+                "attributes": {
+                    "main": "true"
+                },
+                "entityNumber": "285",
+                "entityID": "29870"
+            }
+        }
+    }
+}

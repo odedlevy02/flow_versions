@@ -1,0 +1,181 @@
+{
+    "name": "iditUpdatePaymentMethod",
+    "flow": {
+        "name": "iditUpdatePaymentMethod",
+        "description": "A flow to update the payment method and terms of the policy. The input of the flow is the policy Id and payment details. The flow contains 6 steps",
+        "steps": [
+            {
+                "description": "map service base params",
+                "stepType": "mapEnrich",
+                "config": {
+                    "maps": [
+                        {
+                            "value": "idit-ci:7014",
+                            "targetPath": "serviceParams.endpointUrlHost"
+                        },
+                        {
+                            "value": "IDITServices",
+                            "targetPath": "serviceParams.serviceName"
+                        },
+                        {
+                            "value": {
+                                "userName": "{{$env.userName}}",
+                                "password": "{{$env.password}}"
+                            },
+                            "targetPath": "serviceParams.httpHeaders"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "description": "call IDIT service to get policy for creating endorsment",
+                "stepType": "apiEnrich",
+                "stepArgs": "soapSlim",
+                "config": {
+                    "endpoint": {
+                        "url": "{{`http://${serviceParams.endpointUrlHost}/idit-web/ws?serviceName=${serviceParams.serviceName}&methodName=GetReproducedPolicyByPolHeaderExtNumberForEndorsement&wsdl`}}"
+                    },
+                    "method": "{{`${serviceParams.serviceName}GetReproducedPolicyByPolHeaderExtNumberForEndorsement.${serviceParams.serviceName}GetReproducedPolicyByPolHeaderExtNumberForEndorsementInterface.${serviceParams.serviceName}GetReproducedPolicyByPolHeaderExtNumberForEndorsement`}}",
+                    "targetPath": "policyForEndorsement.body",
+                    "soapRequest": {
+                        "interfaces-root:iDWrapperIVO.externalID": "{{policyId}}",
+                        "interfaces-root:iDWrapperIVO.attributes.main": "true"
+                    },
+                    "httpHeaders": "{{serviceParams.httpHeaders}}",
+                    "headerTargetPath": "policyForEndorsement.header"
+                },
+                "isSelected": false
+            },
+            {
+                "description": "map the policyHeaderIVO object for create endorsment (this step is necessary to make the input fields optional)",
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "collectionMethodId",
+                            "targetPath": "policyHeaderIVO.policyIVOsList.policyIVOs.collectionMethodId"
+                        },
+                        {
+                            "jsonata": "frequencyId",
+                            "targetPath": "policyHeaderIVO.policyIVOsList.policyIVOs.paymentTermId"
+                        },
+                        {
+                            "jsonata": "bankAccountExternalNumber",
+                            "targetPath": "policyHeaderIVO.policyIVOsList.policyIVOs.policyBankAccountExternalNumber"
+                        },
+                        {
+                            "jsonata": "'true'",
+                            "targetPath": "policyHeaderIVO.attributes.main"
+                        },
+                        {
+                            "jsonata": "policyForEndorsement.body.policyHeaderIVO.attributes.id",
+                            "targetPath": "policyHeaderIVO.attributes.id"
+                        },
+                        {
+                            "jsonata": "policyForEndorsement.body.policyHeaderIVO.attributes.updateVersion",
+                            "targetPath": "policyHeaderIVO.attributes.updateVersion"
+                        },
+                        {
+                            "jsonata": "policyForEndorsement.body.policyHeaderIVO.policyIVOsList.policyIVOs.attributes.id",
+                            "targetPath": "policyHeaderIVO.policyIVOsList.policyIVOs.attributes.id"
+                        },
+                        {
+                            "jsonata": "policyForEndorsement.body.policyHeaderIVO.policyIVOsList.policyIVOs.attributes.updateVersion",
+                            "targetPath": "policyHeaderIVO.policyIVOsList.policyIVOs.attributes.updateVersion"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "description": "call IDIT create endorsment service",
+                "stepType": "apiEnrich",
+                "stepArgs": "soapSlim",
+                "config": {
+                    "endpoint": {
+                        "url": "{{`http://${serviceParams.endpointUrlHost}/idit-web/ws?serviceName=${serviceParams.serviceName}&methodName=CreateEndorsment&wsdl`}}"
+                    },
+                    "method": "{{`${serviceParams.serviceName}CreateEndorsment.${serviceParams.serviceName}CreateEndorsmentInterface.${serviceParams.serviceName}CreateEndorsment`}}",
+                    "targetPath": "result",
+                    "soapRequest": {
+                        "policyHeaderIVO": "{{policyHeaderIVO}}"
+                    },
+                    "soapHeaders": [
+                        {
+                            "interfaces-root:basicSoapHeaderIVOinList": {
+                                "interfaces-root:basicSoapHeaderIVO": {
+                                    "attributes": {
+                                        "main": true
+                                    },
+                                    "messageCorrelationId": "{{policyForEndorsement.header[0]['interfaces-root:basicSoapHeaderIVOoutList'][0]['interfaces-root:basicSoapHeaderIVO'][0].messageCorrelationId[0]}}"
+                                }
+                            }
+                        }
+                    ],
+                    "httpHeaders": "{{serviceParams.httpHeaders}}"
+                },
+                "isSelected": false
+            },
+            {
+                "description": "format the final result",
+                "stepType": "mapEnrich",
+                "stepArgs": "jsonata",
+                "config": {
+                    "maps": [
+                        {
+                            "jsonata": "result.extendedIDWrapperIVO {'policyNumber': externalID, 'status': statusIVO.status}",
+                            "targetPath": "result"
+                        }
+                    ]
+                },
+                "isSelected": false
+            },
+            {
+                "description": "delete input and inital data from the doc",
+                "stepType": "removedata",
+                "config": {
+                    "paths": [
+                        {
+                            "removePath": "policyForEndorsement"
+                        },
+                        {
+                            "removePath": "policyHeaderIVO"
+                        },
+                        {
+                            "removePath": "serviceParams"
+                        }
+                    ]
+                },
+                "isSelected": true
+            }
+        ]
+    },
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "policyId": {
+                "type": "string"
+            },
+            "collectionMethodId": {
+                "type": "string"
+            },
+            "frequencyId": {
+                "type": "string"
+            }
+        },
+        "example": {
+            "policyId": "400934",
+            "collectionMethodId": "1",
+            "frequencyId": "6"
+        },
+        "default": {
+            "policyId": "400934",
+            "collectionMethodId": "1",
+            "frequencyId": "6"
+        }
+    },
+    "createDate": "2019-08-11T12:36:43.034Z",
+    "tag": null
+}

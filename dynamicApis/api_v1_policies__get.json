@@ -1,0 +1,33 @@
+{
+    "path": "/api/v1/policies/",
+    "verb": "GET",
+    "flow": "iditGetListOfPolicies",
+    "tag": "Policy",
+    "summary": "Get list of policies",
+    "responseDescription": "List of policies",
+    "dataModel": [
+        {
+            "in": "query",
+            "name": "contactId",
+            "description": "Contact Id"
+        }
+    ],
+    "responseSchema": {
+        "listPolicies": [
+            {
+                "product": {
+                    "id": "5000013",
+                    "description": "Single LOB Multiple Assets"
+                },
+                "policyNumber": "PL-5000000401178/01",
+                "effectiveDate": "2019-07-16T00:00:00",
+                "endDate": "2020-04-22T00:00:00",
+                "policyHolderName": "SamanthaA Jones",
+                "status": {
+                    "id": "20",
+                    "description": "Policy"
+                }
+            }
+        ]
+    }
+}

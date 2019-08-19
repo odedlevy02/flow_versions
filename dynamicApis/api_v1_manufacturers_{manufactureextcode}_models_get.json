@@ -1,0 +1,27 @@
+{
+    "path": "/api/v1/manufacturers/{manufactureExtCode}/models",
+    "verb": "GET",
+    "flow": "iditGetModelsByMake",
+    "tag": "Other",
+    "summary": "Get models by make",
+    "responseDescription": "List of models by make",
+    "dataModel": [],
+    "responseSchema": {
+        "models": [
+            {
+                "modelId": 37405,
+                "modelName": "PASSAT  1.9TDI 85KW",
+                "modelProperties": [
+                    {
+                        "property": "cc",
+                        "value": "1896"
+                    },
+                    {
+                        "property": "doors",
+                        "value": "4"
+                    }
+                ]
+            }
+        ]
+    }
+}

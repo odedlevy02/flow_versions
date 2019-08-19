@@ -1,0 +1,24 @@
+{
+    "path": "/api/v1/policies/{productId}/payments/terms",
+    "verb": "GET",
+    "flow": "iditGetPaymentTerms",
+    "tag": "Policy",
+    "summary": "Get Payment Terms",
+    "responseDescription": "List of payment terms",
+    "dataModel": [],
+    "responseSchema": {
+        "paymentTerms": [
+            {
+                "paymentTermId": 1,
+                "paymentTerm": "Direct Debit, Yearly",
+                "numberOfInstallments": "1",
+                "paymentFrequency": " ",
+                "paymentAmount": null,
+                "collectionMethodId": "2",
+                "collectionMethodDescription": "Direct Debit",
+                "isShortTerm": "false",
+                "isConditional": "false"
+            }
+        ]
+    }
+}

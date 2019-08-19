@@ -1,0 +1,11 @@
+{
+    "path": "/api/v1/policies/{policyId}/tasks/{taskId}",
+    "verb": "POST",
+    "flow": "iditCreateTaskForPolicy",
+    "tag": "Policy",
+    "summary": "Create task for policy",
+    "responseDescription": "Success indicator",
+    "responseSchema": {
+        "taskCreated": true
+    }
+}

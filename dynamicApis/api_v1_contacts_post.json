@@ -1,0 +1,107 @@
+{
+    "path": "/api/v1/contacts",
+    "verb": "POST",
+    "flow": "iditCreateContact",
+    "tag": "Contact",
+    "summary": "Create new contact",
+    "responseDescription": "Created contact Id",
+    "dataModel": {
+        "firstName": "Jane",
+        "name": "Dawns",
+        "dateOfBirth": "1982-04-05T00:00:00",
+        "titleId": "1",
+        "genderId": "2",
+        "identifiers": [
+            {
+                "identifierTypeId": "6",
+                "idValue": "1111111",
+                "countryId": "2"
+            },
+            {
+                "identifierTypeId": "1",
+                "idValue": "2222222",
+                "countryId": "2"
+            }
+        ],
+        "affinityMemberships": [
+            {
+                "affinityTypeId": "13027",
+                "membershipId": "33333333",
+                "remarks": "this is the best golf club"
+            }
+        ],
+        "preferredContactMethod": {
+            "methodId": "3",
+            "deliveryDetails": {
+                "emailTypeId": "2",
+                "email": "work@mail.com"
+            }
+        },
+        "addresses": [
+            {
+                "postalCode": "77777",
+                "countryId": "149",
+                "street": "Hertzel",
+                "city": "Tel Aviv",
+                "streetNumber": "223",
+                "addressLine2": "apt. 6B",
+                "addressTypeId": "2"
+            },
+            {
+                "postalCode": "55555",
+                "countryId": "151",
+                "street": "Harokmim",
+                "city": "Holon",
+                "streetNumber": "26",
+                "addressLine2": "apt. 6B",
+                "addressTypeId": "1"
+            }
+        ],
+        "emails": [
+            {
+                "emailTypeId": "1",
+                "email": "YorniMan@mail.com"
+            }
+        ],
+        "phoneNumbers": [
+            {
+                "telephoneNumber": "9042131",
+                "telephoneTypeId": "3",
+                "countryDialCodeId": "1",
+                "telephonePrefixId": "1",
+                "telephonePrefix": "02"
+            },
+            {
+                "telephoneNumber": "9319787",
+                "telephoneTypeId": "4",
+                "countryDialCodeId": "1",
+                "telephonePrefixId": "1",
+                "telephonePrefix": "02"
+            }
+        ],
+        "bankAccounts": [
+            {
+                "countryId": "153",
+                "bankName": "Diskunt",
+                "branchName": "123",
+                "accountNumber": "ab-123456",
+                "ibanCode": "NO6862638376794",
+                "bicCode": "87687",
+                "swiftCode": "hu-09870980"
+            }
+        ],
+        "creditCards": [
+            {
+                "countryId": "194",
+                "cardNumber": "4336590349879905",
+                "holderName": "Brooklyn Baker",
+                "validDate": "2025-03-28T00:00:00",
+                "cvcCode": "114",
+                "cardTypeId": "28807"
+            }
+        ]
+    },
+    "responseSchema": {
+        "contactId": "29424"
+    }
+}

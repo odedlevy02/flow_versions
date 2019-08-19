@@ -1,0 +1,33 @@
+{
+    "path": "/api/v1/claims",
+    "verb": "GET",
+    "flow": "iditGetListOfClaims",
+    "tag": "Claim",
+    "summary": "Get list of claims",
+    "responseDescription": "A list of claims",
+    "dataModel": [
+        {
+            "in": "query",
+            "name": "contactId",
+            "description": "Contact Id"
+        }
+    ],
+    "responseSchema": {
+        "listClaims": {
+            "claims": [
+                {
+                    "policyNumber": "PL-5000000021717/00",
+                    "claimEventDate": "2010-01-04T00:00:00",
+                    "claimCause": "Car crash",
+                    "status": {
+                        "id": "1",
+                        "description": "Open"
+                    },
+                    "lastInteractionDate": "",
+                    "nextAction": "",
+                    "claimNumber": "28877"
+                }
+            ]
+        }
+    }
+}
